@@ -1,14 +1,44 @@
 var guessInput = null;
 var randomCharacter = null;
-var dataSource = [
-    { id: '0', text: 'Sharko' },
-    { id: '1', text: 'Akira' },
-    { id: '2', text: 'Owl' }
-]
-
-randomizeCharacter();
 
 $(document).ready(function () {
+    loadSelect2Data();
+});
+
+function guessCharacter() {
+    console.log("Selecionado:", guessInput.val());
+    console.log("Acertou?:", guessInput.val() == randomCharacter ? "Sim" : "Não");
+}
+
+
+async function fetchMonsters() {
+    try {
+        const response = await fetch("https://deepwokendle.onrender.com/api/monsters");
+        if (!response.ok) throw new Error("Error while trying to fetch monsters");
+
+        const monsters = await response.json();
+        return monsters.map(monster => ({
+            id: monster.id,
+            name: monster.name,
+            picture: monster.picture,
+            fightingStyle: monster.fightingStyle,
+            mainHabitat: monster.mainHabitat,
+            humanoid: monster.humanoid
+        }));
+    } catch (error) {
+        console.error("Error while trying to fetch monsters:", error);
+        return [];
+    }
+}
+
+async function loadSelect2Data() {
+    const monsters = await fetchMonsters();
+
+    const dataSource = monsters.map(monster => ({
+        id: monster.id,
+        text: monster.name
+    }));
+
     guessInput = $('#guessInput').select2({
         placeholder: 'Character',
         allowClear: true,
@@ -16,14 +46,7 @@ $(document).ready(function () {
         minimumResultsForSearch: 0,
         data: dataSource
     });
-});
 
-function guessCharacter(){
-    console.log("Selecionado:", guessInput.val());
-    console.log("Acertou?:", guessInput.val() == randomCharacter ? "Sim" : "Não");
-}
-
-function randomizeCharacter(){
-    randomCharacter = Math.floor(Math.random() * dataSource.length);
-    console.log(randomCharacter);
+    randomCharacter = monsters[Math.floor(Math.random() * monsters.length)];
+    console.log("Personagem sorteado:", randomCharacter);
 }
