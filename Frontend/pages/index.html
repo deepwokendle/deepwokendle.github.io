@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deepwokendle</title>
+  <link rel="stylesheet" href="../css/styles.css">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+
+<body>
+  <section id="mainGame">
+    <div id="container" class="border">
+      <div class="rowsContainer border">
+        <div class="columns">
+          <div class="column">
+            <div class="column-title">Picture</div>
+          </div>
+          <div class="column">
+            <div class="column-title">Name</div>
+          </div>
+          <div class="column">
+            <div class="column-title">Fighting Style</div>
+          </div>
+          <div class="column">
+            <div class="column-title">Main Habitat</div>
+          </div>
+          <div class="column">
+            <div class="column-title">Humanoid</div>
+          </div>
+        </div>
+        <div class="col-md-12 rowGuessed firstGuess">
+          <div class="item border"><img src="../img/MegalodauntIcon.webp" alt=""></div>
+          <div class="item border">Sharko</div>
+          <div class="item border">Irrational</div>
+          <div class="item border">Viper's Jaw</div>
+          <div class="item border">X</div> <!-- ✓ -->
+        </div>
+      </div>
+
+      <div class="center">
+        <select id="guessInput" class="border" name="state">
+        </select>
+      </div>
+      <div class="center">
+        <button class="btn border" onclick="guessCharacter()">GUESS</button>
+      </div>
+    </div>
+  </section>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <script src="../js/script.js"></script>
+</body>
+</html>
