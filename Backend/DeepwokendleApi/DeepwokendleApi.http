@@ -1,0 +1,6 @@
+@DeepwokendleApi_HostAddress = http://localhost:5180
+
+GET {{DeepwokendleApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
