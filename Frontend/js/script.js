@@ -10,7 +10,6 @@ function guessCharacter() {
     console.log("Acertou?:", guessInput.val() == randomCharacter ? "Sim" : "Não");
 }
 
-
 async function fetchMonsters() {
     try {
         const response = await fetch("https://deepwokendle.onrender.com/api/monsters");
