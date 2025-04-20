@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DeepwokendleApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+423a558794c7bb8e524325996fad45609e90de81")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+686c1acac215246cb14b5143b5ccbe0ba4458bb2")]
 [assembly: System.Reflection.AssemblyProductAttribute("DeepwokendleApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DeepwokendleApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
