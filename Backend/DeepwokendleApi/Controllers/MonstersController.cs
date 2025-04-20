@@ -28,7 +28,7 @@ public class MonstersController : ControllerBase
             new Monster { Id = 15, Name = "Mudskipper Broodlord", Picture = "/img/MudskipperBroodlord.jpg", FightingStyle = "Fists", MainHabitat = "The Depths", Humanoid = false },
             new Monster { Id = 16, Name = "Enforcer", Picture = "/img/Swordforcer.webp", FightingStyle = "Heavy Weapons", MainHabitat = "Depths Trial", Humanoid = false },
             new Monster { Id = 17, Name = "Scion of Ethiron", Picture = "/img/Ethiron.jpg", FightingStyle = "Galebreathe", MainHabitat = "Layer 2 Floor 2", Humanoid = false },
-            new Monster { Id = 18, Name = "Lionfish", Picture = "/img/Lionfish.png", FightingStyle = "Beam", MainHabitat = "The Depths", Humanoid = false },
+            new Monster { Id = 18, Name = "Lionfish", Picture = "/img/Lionfish.jpg", FightingStyle = "Beam", MainHabitat = "The Depths", Humanoid = false },
             new Monster { Id = 19, Name = "Dread Serpent", Picture = "/img/DreadSerpent.jpg", FightingStyle = "Dragon", MainHabitat = "Voidsea", Humanoid = false },
             new Monster { Id = 20, Name = "Klaris Llfiend", Picture = "/img/klaris.jpg", FightingStyle = "Dawnwalker", MainHabitat = "Castle Light", Humanoid = true },
             new Monster { Id = 21, Name = "The Meat Lord", Picture = "/img/TheMeatLord.jpg", FightingStyle = "???", MainHabitat = "Starswept Valley", Humanoid = true },
