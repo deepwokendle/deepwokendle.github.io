@@ -179,10 +179,16 @@ input:focus {
     color: white;
     cursor: pointer;
     transition: 200ms ease-in-out;
+    font-size:14px;
 }
 
 .btn:hover {
     font-size: 16px;
+}
+
+.disabled:hover{
+    font-size: 14px !important;
+    cursor:default;
 }
 
 .center {
@@ -192,6 +198,11 @@ input:focus {
     margin:auto;
     color:white;
 }
+
+#resetTimer{
+    color:black;
+}
+
 .flip-card {
     flex: 1 1 75px;
     min-width: 65px;

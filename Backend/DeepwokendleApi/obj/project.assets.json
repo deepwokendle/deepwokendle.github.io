@@ -465,11 +465,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\User\\Desktop\\passatempo\\deepwokendle\\Backend\\DeepwokendleApi\\DeepwokendleApi.csproj",
+      "projectUniqueName": "C:\\Users\\User\\Desktop\\passatempo\\deepwokendle.github.io\\Backend\\DeepwokendleApi\\DeepwokendleApi.csproj",
       "projectName": "DeepwokendleApi",
-      "projectPath": "C:\\Users\\User\\Desktop\\passatempo\\deepwokendle\\Backend\\DeepwokendleApi\\DeepwokendleApi.csproj",
+      "projectPath": "C:\\Users\\User\\Desktop\\passatempo\\deepwokendle.github.io\\Backend\\DeepwokendleApi\\DeepwokendleApi.csproj",
       "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\User\\Desktop\\passatempo\\deepwokendle\\Backend\\DeepwokendleApi\\obj\\",
+      "outputPath": "C:\\Users\\User\\Desktop\\passatempo\\deepwokendle.github.io\\Backend\\DeepwokendleApi\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
