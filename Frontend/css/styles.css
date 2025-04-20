@@ -22,6 +22,14 @@ body {
     height: 100vh;
 }
 
+.correct {
+    background-color: lightgreen !important;
+}
+
+.wrong {
+    background-color: red !important;
+}
+
 #mainGame {
     width: 100%;
     height: 100%;
@@ -134,10 +142,14 @@ input:focus {
 .rowGuessed {
     display: flex;
     flex-wrap: nowrap;
-    padding:0.2rem 0.5rem;
-    gap:1rem;
+    padding: 0.2rem 0.5rem;
+    gap: 1rem;
     justify-content: start;
     align-items: center;
+}
+
+#attempts {
+    min-height: 115px;
 }
 
 .item {
@@ -152,7 +164,7 @@ input:focus {
     text-align: center;
 }
 
-.item img{
+.item img {
     min-width: 65px;
     flex: 1 1 75px;
     max-width: 125px;
@@ -161,6 +173,7 @@ input:focus {
 
 .btn {
     padding: 8px;
+    margin-top:15px;
     margin-bottom: 15px;
     background: var(--background);
     color: white;
@@ -176,5 +189,50 @@ input:focus {
     width: 100%;
     display: flex;
     justify-content: center;
-    margin: 5px 0;
+    margin:auto;
+    color:white;
+}
+.flip-card {
+    flex: 1 1 75px;
+    min-width: 65px;
+    max-width: 125px;
+    aspect-ratio: 1 / 1;
+    position: relative;
+    perspective: 1000px;
+  }
+
+.flip-card-inner {
+    position: absolute;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+    transform: rotateY(0deg);
+}
+
+.flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border: inherit;
+    box-sizing: border-box;
+}
+
+.flip-card-front {
+    background: var(--background);
+}
+
+.flip-card-back {
+    transform: rotateY(180deg);
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }

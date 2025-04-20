@@ -1,13 +1,46 @@
 var guessInput = null;
 var randomCharacter = null;
-
+var monstersDataSource = null;
 $(document).ready(function () {
     loadSelect2Data();
 });
-
 function guessCharacter() {
-    console.log("Selecionado:", guessInput.val());
-    console.log("Acertou?:", guessInput.val() == randomCharacter ? "Sim" : "Não");
+    let html = `<div class="col-md-12 rowGuessed firstGuess">`;
+    $("#firstGuessText").css("display", "none")
+    html += `
+      <div class="flip-card">
+        <div class="flip-card-inner">
+          <div class="flip-card-front"></div>
+          <div class="flip-card-back item border">
+            <img src="..${monstersDataSource[guessInput.val() - 1].picture}" alt="">
+          </div>
+        </div>
+      </div>`;
+
+    ['name', 'fightingStyle', 'mainHabitat', 'humanoid'].forEach((field, idx) => {
+        const monster = monstersDataSource[guessInput.val() - 1];
+        const isCorrect = monster[field] == randomCharacter[field];
+        const display = field === 'humanoid' ? (monster[field] ? '✓' : 'X') : monster[field];
+        html += `
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front"></div>
+            <div class="flip-card-back item border ${isCorrect ? 'correct' : 'wrong'}">
+              ${display}
+            </div>
+          </div>
+        </div>`;
+    });
+
+    html += `</div>`;
+
+    const el = document.getElementById('attempts');
+    $('.firstGuess').removeClass('firstGuess');
+    el.innerHTML = html + el.innerHTML;
+
+    document.querySelectorAll('.flip-card').forEach((card, i) => {
+        setTimeout(() => card.classList.add('flipped'), i * 200);
+    });
 }
 
 async function fetchMonsters() {
@@ -31,9 +64,9 @@ async function fetchMonsters() {
 }
 
 async function loadSelect2Data() {
-    const monsters = await fetchMonsters();
+    monstersDataSource = await fetchMonsters();
 
-    const dataSource = monsters.map(monster => ({
+    const dataSource = monstersDataSource.map(monster => ({
         id: monster.id,
         text: monster.name
     }));
@@ -45,7 +78,9 @@ async function loadSelect2Data() {
         minimumResultsForSearch: 0,
         data: dataSource
     });
-
-    randomCharacter = monsters[Math.floor(Math.random() * monsters.length)];
+    const todayKey = new Date().toISOString().split('T')[0];
+    Math.seedrandom(todayKey);
+    const idx = Math.floor(Math.random() * monstersDataSource.length);
+    randomCharacter = monstersDataSource[idx];
     console.log("Personagem sorteado:", randomCharacter);
 }
