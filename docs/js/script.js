@@ -3,11 +3,15 @@ var randomCharacter = null;
 var monstersDataSource = null;
 var cacheKey = null;
 var alreadyGuessed = null;
+var amountsGuessed = 0;
 $(document).ready(function () {
     loadSelect2Data();
 });
 
 function guessCharacter() {
+    amountsGuessed += 1;
+    localStorage.setItem('amountsGuessed', amountsGuessed);
+    $('#amountsGuessed').text(`Tries: ${amountsGuessed}`);
     let html = `<div class="col-md-12 rowGuessed firstGuess">`;
     $("#firstGuessText").css("display", "none")
     html += `
@@ -15,7 +19,7 @@ function guessCharacter() {
         <div class="flip-card-inner">
           <div class="flip-card-front"></div>
           <div class="flip-card-back item border">
-            <img src="..${monstersDataSource[guessInput.val() - 1].picture}" alt="">
+            <img src="./${monstersDataSource[guessInput.val() - 1].picture}" alt="">
           </div>
         </div>
       </div>`;
@@ -37,15 +41,18 @@ function guessCharacter() {
 
     html += `</div>`;
 
-    const el = document.getElementById('attempts');
-    $('.firstGuess').removeClass('firstGuess');
-    el.innerHTML = html + el.innerHTML;
+    const container = document.getElementById('attempts');
+
+    container.querySelector('.firstGuess')?.classList.remove('firstGuess');
+    const header = container.querySelector('.columns');
+    header.insertAdjacentHTML('afterend', html);
 
     const cards = document.querySelectorAll('.flip-card');
     if (randomCharacter.id == monstersDataSource[guessInput.val() - 1].id) {
         disableButtons();
     }
-
+    if (amountsGuessed > 0)
+        $('#amountsGuessed').text(`Tries: ${amountsGuessed}`);
     cards.forEach((card, i) => {
         setTimeout(() => {
             card.classList.add('flipped');
@@ -68,10 +75,10 @@ function checkIfAlreadyWon() {
         disableButtons();
         showCorrectCharacter();
         Swal.fire({
-            title: 'Já jogou hoje!',
-            text: 'Você já acertou o personagem de hoje. Volte amanhã!',
+            title: 'You already played today!',
+            text: `You have already guessed today's character, come back tomorrow!`,
             icon: 'info',
-            confirmButtonText: 'Ok'
+            confirmButtonText: 'Okay.'
         });
     }
 }
@@ -90,10 +97,7 @@ function showCorrectCharacter() {
       </div>`;
 
     ['name', 'fightingStyle', 'mainHabitat', 'humanoid'].forEach((field) => {
-        const display = field === 'humanoid'
-            ? (randomCharacter[field] ? '✓' : 'X')
-            : randomCharacter[field];
-
+        const display = field === 'humanoid' ? (randomCharacter[field] ? '✓' : 'X') : randomCharacter[field];
         html += `
         <div class="flip-card">
           <div class="flip-card-inner">
@@ -107,9 +111,11 @@ function showCorrectCharacter() {
 
     html += `</div>`;
 
-    const el = document.getElementById('attempts');
-    $('.firstGuess').removeClass('firstGuess');
-    el.innerHTML = html + el.innerHTML;
+    const container = document.getElementById('attempts');
+
+    container.querySelector('.firstGuess')?.classList.remove('firstGuess');
+    const header = container.querySelector('.columns');
+    header.insertAdjacentHTML('afterend', html);
 
     const cards = document.querySelectorAll('.flip-card');
     cards.forEach((card, i) => {
@@ -125,9 +131,10 @@ function checkGuess() {
             title: 'Success!',
             text: 'You guessed it right!',
             icon: 'success',
-            confirmButtonText: 'Cool'
+            confirmButtonText: 'Nice'
         });
         localStorage.setItem(cacheKey, 'guessed');
+        alreadyGuessed = localStorage.getItem(cacheKey);
     }
 }
 
@@ -166,6 +173,10 @@ async function loadSelect2Data() {
     });
     const todayKey = new Date().toISOString().split('T')[0];
     cacheKey = `deepwokendle_${todayKey}`;
+    const saved = localStorage.getItem('amountsGuessed');
+    amountsGuessed = saved !== null ? parseInt(saved, 10) : 0;
+    if (amountsGuessed > 0)
+        $('#amountsGuessed').text(`Tries: ${amountsGuessed}`);
     Math.seedrandom(todayKey);
     const idx = Math.floor(Math.random() * monstersDataSource.length);
     randomCharacter = monstersDataSource[idx];
@@ -177,12 +188,10 @@ function updateResetTimer() {
     const now = new Date();
     const tomorrow = new Date();
     tomorrow.setHours(24, 0, 0, 0);
-
     const diffMs = tomorrow - now;
     const hours = String(Math.floor(diffMs / 3600000)).padStart(2, '0');
     const minutes = String(Math.floor((diffMs % 3600000) / 60000)).padStart(2, '0');
     const seconds = String(Math.floor((diffMs % 60000) / 1000)).padStart(2, '0');
-
     $('#resetTimer').text(`Character resetting in ${hours}:${minutes}:${seconds}`);
 }
 
