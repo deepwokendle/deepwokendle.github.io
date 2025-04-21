@@ -211,7 +211,7 @@ input:focus {
     word-break: break-word;
     overflow-wrap: break-word;
     padding: 6px;
-    font-size: clamp(6px, 1.5vw, 9px);
+    font-size: clamp(6px, 1.4vw, 8px);
 }
 
 .item img {

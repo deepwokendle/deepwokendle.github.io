@@ -19,14 +19,14 @@ namespace DeepwokendleApi.Controllers
             {
                 new Monster { Id =  1, Name = "Sharko",              Picture = "/img/sharko.png",               MainHabitat = "Viper's Jaw",          Humanoid = false, ElementId = 1, CategoryId = 2 },
                 new Monster { Id =  2, Name = "Akira",               Picture = "/img/akira.png",                MainHabitat = "Castle Light",         Humanoid = true,  ElementId = 5, CategoryId = 3 },
-                new Monster { Id =  3, Name = "Owl",                 Picture = "/img/owl.png",                  MainHabitat = "The Depths",           Humanoid = false, ElementId = 1, CategoryId = 2 },
+                new Monster { Id =  3, Name = "Owl",                 Picture = "/img/owl.png",                  MainHabitat = "The Depths",           Humanoid = false, ElementId = 3, CategoryId = 2 },
                 new Monster { Id =  4, Name = "Chaser",              Picture = "/img/chaser.jpg",               MainHabitat = "Layer 2",              Humanoid = true,  ElementId = 6, CategoryId = 4 },
                 new Monster { Id =  5, Name = "Duke Erisia",         Picture = "/img/duke.jpg",                 MainHabitat = "Erisia",               Humanoid = true,  ElementId = 2, CategoryId = 4 },
                 new Monster { Id =  6, Name = "Lord Regent",         Picture = "/img/regent.jpg",               MainHabitat = "Etris",                Humanoid = true,  ElementId = 3, CategoryId = 3 },
                 new Monster { Id =  7, Name = "Ferryman",            Picture = "/img/Ferryman.jpg",             MainHabitat = "Boatman's Watch",      Humanoid = true,  ElementId = 4, CategoryId = 4 },
                 new Monster { Id =  8, Name = "Yun'Shul",            Picture = "/img/yunshul.jpg",              MainHabitat = "The Depths",           Humanoid = false, ElementId = 9, CategoryId = 3 },
                 new Monster { Id =  9, Name = "Mudskipper",          Picture = "/img/mudskipper.jpg",           MainHabitat = "Erisia",               Humanoid = false, ElementId = 1, CategoryId = 2 },
-                new Monster { Id = 10, Name = "Lower Bandit",        Picture = "/img/BanditNormal.webp",        MainHabitat = "Lower Erisia",         Humanoid = true,  ElementId = 8, CategoryId = 3 },
+                new Monster { Id = 10, Name = "Lower Bandit",        Picture = "/img/BanditNormal.webp",        MainHabitat = "Lower Erisia",         Humanoid = true,  ElementId = 8, CategoryId = 6 },
                 new Monster { Id = 11, Name = "Thresher",            Picture = "/img/Thresher.webp",            MainHabitat = "Starswept Valley",     Humanoid = false, ElementId = 1, CategoryId = 2 },
                 new Monster { Id = 12, Name = "Nautilodaunt",        Picture = "/img/nautilodaunt.jpg",         MainHabitat = "The Depths",           Humanoid = false, ElementId = 1, CategoryId = 2 },
                 new Monster { Id = 13, Name = "Gigamed",             Picture = "/img/Gigamed.jpg",              MainHabitat = "The Depths",           Humanoid = false, ElementId = 4, CategoryId = 2 },
@@ -39,7 +39,7 @@ namespace DeepwokendleApi.Controllers
                 new Monster { Id = 20, Name = "Klaris Llfiend",      Picture = "/img/klaris.jpg",               MainHabitat = "Castle Light",         Humanoid = true,  ElementId = 9, CategoryId = 3 },
                 new Monster { Id = 21, Name = "The Meat Lord",       Picture = "/img/TheMeatLord.jpg",          MainHabitat = "Starswept Valley",     Humanoid = true,  ElementId = 9, CategoryId = 3 },
                 new Monster { Id = 22, Name = "Karliah",             Picture = "/img/Karliah.webp",             MainHabitat = "Etris",                Humanoid = true,  ElementId = 1, CategoryId = 3 },
-                new Monster { Id = 23, Name = "Immortal Guardian",   Picture = "/img/IMMGUARD.webp",            MainHabitat = "Crypt of the Unbroken",Humanoid = true,  ElementId = 1, CategoryId = 3 },
+                new Monster { Id = 23, Name = "Immortal Guardian",   Picture = "/img/IMMGUARD.webp",            MainHabitat = "Crypt of the Unbroken",Humanoid = true,  ElementId = 1, CategoryId = 6 },
             };
             foreach (var m in monsters)
             {
