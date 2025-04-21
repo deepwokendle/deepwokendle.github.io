@@ -46,7 +46,6 @@ async function initInfiniteMode() {
   randomCharacter = monstersDataSource[
     Math.floor(Math.random() * monstersDataSource.length)
   ];
-  console.log(randomCharacter)
   guessInput.prop('disabled', false);
   $(".btn").prop("disabled", false).removeClass("disabled");
 }
