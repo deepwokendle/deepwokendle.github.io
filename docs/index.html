@@ -8,17 +8,35 @@
   <link rel="stylesheet" href="css/styles.css">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="shortcut icon" href="img/favicon2.ico" type="image/x-icon">
-  <meta name="description" content="Deepwokendle is a guessing game where you try to identify Deepwoken characters based on clues. Test your knowledge!">
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7638430998620093" crossorigin="anonymous"></script>
+  <meta name="description"
+    content="Deepwokendle is a guessing game where you try to identify Deepwoken characters based on clues. Test your knowledge!">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7638430998620093"
+    crossorigin="anonymous"></script>
 </head>
 
 <body>
   <section id="mainGame">
+
     <div id="container" class="border">
       <header class="center">
+        <button id="hamburger" aria-label="Abrir menu">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </button>
         <h1>DEEPWOKENDLE</h1>
       </header>
-      <div id="attempts"class="rowsContainer border">
+      <aside id="sidebar">
+        <nav>
+          <ul id="sidebarOptions">
+            <li id="normalMode"><button>Normal Mode</button></li>
+            <li id="infiniteMode"><button>Infinite Mode</button></li>
+          </ul>
+        </nav>
+      </aside>
+      <div id="overlay"></div>
+      <div id="attempts" class="rowsContainer border">
+        <div id="streakDisplay" class="center">Streak: 0</div>
         <div class="columns">
           <div class="column">
             <div class="column-title">Picture</div>
@@ -54,11 +72,15 @@
       </div>
     </div>
   </section>
-  <a class="kofi-btn" href="https://ko-fi.com/ninpu/tip" title="Support me!" target="_blank"><img src="https://storage.ko-fi.com/cdn/cup-border.png" alt=""></a>
+  <a class="kofi-btn" href="https://ko-fi.com/ninpu/tip" title="Support me!" target="_blank"><img
+      src="https://storage.ko-fi.com/cdn/cup-border.png" alt=""></a>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/seedrandom/3.0.5/seedrandom.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+    integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="js/script.js"></script>
 </body>
+
 </html>
