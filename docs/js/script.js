@@ -335,9 +335,3 @@ document.getElementById('infiniteMode').addEventListener('click', () => {
 });
 
 setInterval(updateResetTimer, 1000);
-
-var item = document.getElementById("attempts");
-window.addEventListener("wheel", function (e) {
-  if (e.deltaY > 0) item.scrollLeft += 20;
-  else item.scrollLeft -= 20;
-});

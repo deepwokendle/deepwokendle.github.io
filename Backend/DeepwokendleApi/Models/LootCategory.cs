@@ -1,10 +1,8 @@
 namespace DeepwokendleApi.Models
 {
-    public class Loot
+    public class LootCategory
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
-        public int CategoryId { get; set; }
-        public LootCategory Category { get; set; }
     }
 }
