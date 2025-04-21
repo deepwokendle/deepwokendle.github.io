@@ -21,6 +21,7 @@ async function initNormalMode() {
   $('#streakDisplay').hide();
   $('#attempts .rowGuessed').remove();
   $("#firstGuessText").show();
+  $('.columns').css('margin-top', '0px');
   await loadSelect2Data();
   const todayKey = new Date().toISOString().split('T')[0];
   cacheKey = `deepwokendle_${todayKey}`;
@@ -45,6 +46,7 @@ async function initInfiniteMode() {
   amountsGuessed = 0;
   $('#amountsGuessed').text(`Tries: 0/5`);
   $('#attempts .rowGuessed').remove();
+  $('.columns').css('margin-top', '22px');
   $("#firstGuessText").show();
   Math.random = _nativeRandom;
   let idx = Math.floor(Math.random() * monstersDataSource.length);
@@ -76,8 +78,8 @@ function guessCharacter() {
       <div class="flip-card">
         <div class="flip-card-inner">
           <div class="flip-card-front"></div>
-          <div class="flip-card-back item border">
-            <img src="./${monster.picture}" alt="">
+          <div class="flip-card-back border">
+            <img class="itemImg" src="./${monster.picture}" alt="">
           </div>
         </div>
       </div>`;
@@ -109,7 +111,7 @@ function guessCharacter() {
 
   const container = document.getElementById('attempts');
   container.querySelector('.firstGuess')?.classList.remove('firstGuess');
-  container.querySelector('.columns')
+  container.querySelector('.headerContainer')
     .insertAdjacentHTML('afterend', html);
 
   const cards = document.querySelectorAll('.flip-card');
@@ -138,10 +140,16 @@ function guessCharacter() {
   cards.forEach((card, i) => {
     setTimeout(() => {
       card.classList.add('flipped');
+      fitty('.item', {
+        minSize: 7, 
+        maxSize: 12,
+        observe: true 
+      });
     }, i * 300);
   })
 
   setTimeout(() => {
+    
     if (correct) {
       if (mode === 'normal') {
         Swal.fire({
@@ -211,8 +219,8 @@ function showCorrectCharacter() {
       <div class="flip-card">
         <div class="flip-card-inner">
           <div class="flip-card-front"></div>
-          <div class="flip-card-back item border">
-            <img src="./${randomCharacter.picture}" alt="">
+          <div class="flip-card-back border">
+            <img class="itemImg"src="./${randomCharacter.picture}" alt="">
           </div>
         </div>
       </div>`;
@@ -235,7 +243,7 @@ function showCorrectCharacter() {
   const container = document.getElementById('attempts');
 
   container.querySelector('.firstGuess')?.classList.remove('firstGuess');
-  const header = container.querySelector('.columns');
+  const header = container.querySelector('.headerContainer');
   header.insertAdjacentHTML('afterend', html);
 
   const cards = document.querySelectorAll('.flip-card');
@@ -320,10 +328,6 @@ function toggleSidebar() {
   sidebar.classList.toggle('open');
   sidebar.classList.toggle('border');
   overlay.classList.toggle('visible');
-  setTimeout(function () {
-    $('#hamburger').toggle(!$('#sidebar').hasClass('open'));
-  }, $('#sidebar').hasClass('open') ? 0 : 150);
-
 }
 
 hamburger.addEventListener('click', toggleSidebar);

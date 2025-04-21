@@ -22,11 +22,15 @@ body {
     height: 100vh;
 }
 
+h1 {
+    color: #18221a;
+}
+
 .correct {
     background-color: lightgreen !important;
 }
 
-.partial{
+.partial {
     background-color: orange !important;
 }
 
@@ -64,7 +68,7 @@ body {
 
 #container {
     width: 90%;
-    max-width: 500px;
+    max-width: 700px;
     padding: 20px;
     padding-bottom: 0px;
     max-height: 400px;
@@ -90,6 +94,7 @@ input:focus {
     display: grid;
     grid-auto-rows: auto;
     width: 100%;
+    margin-bottom: 15px;
     max-height: 145px;
     overflow-y: auto;
     position: relative;
@@ -101,8 +106,17 @@ input:focus {
 }
 
 #streakDisplay {
-    background-color: var(--container-background);
+    position: fixed;
+    width: 700px;
+    left: 50%;
+    transform: translateX(-50%);
     color: black;
+}
+
+.headerContainer {
+    background: var(--container-background);
+    overflow: hidden;
+    height: fit-content;
 }
 
 .columns {
@@ -138,6 +152,7 @@ input:focus {
 }
 
 @media (max-width: 480px) {
+
     .columns,
     .rowGuessed {
         grid-template-columns: repeat(7, minmax(50px, 1fr));
@@ -188,12 +203,6 @@ input:focus {
     align-items: center;
 }
 
-#attempts {
-    max-width: 425px;
-    width: 90%;
-    margin-bottom: 15px;
-}
-
 #firstGuessText {
     margin: 30px 0;
 }
@@ -202,19 +211,17 @@ input:focus {
     min-width: 65px;
     flex: 1 1 75px;
     max-width: 125px;
-    aspect-ratio: 1 / 1;
-    background-color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    word-break: break-word;
-    overflow-wrap: break-word;
-    padding: 6px;
-    font-size: clamp(6px, 1.4vw, 8px);
+    aspect-ratio: 1/1;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    word-break: break-word !important;
+    text-align: center !important;
+    padding: 2px;
+    font-weight: bolder;
 }
 
-.item img {
+.itemImg {
     min-width: 65px;
     flex: 1 1 75px;
     max-width: 125px;
@@ -330,7 +337,7 @@ input:focus {
     background: none;
     border: none;
     cursor: pointer;
-    z-index: 1001;
+    z-index: 999;
 }
 
 #hamburger .bar {
