@@ -1,6 +1,7 @@
 var guessInput = null;
 var randomCharacter = null;
 var monstersDataSource = null;
+var select2Data = null;
 var cacheKey = null;
 var alreadyGuessed = null;
 var amountsGuessed = 0;
@@ -31,7 +32,7 @@ async function initNormalMode() {
 
 async function initInfiniteMode() {
   correctShown = false;
-  guessInput.val(monstersDataSource[0].id).trigger('change');
+  guessInput.val(select2Data[0].id).trigger('change');
   mode = 'infinite';
   $('#resetTimer').hide();
   await loadSelect2Data();
@@ -259,7 +260,7 @@ async function fetchMonsters() {
 async function loadSelect2Data() {
   if (monstersDataSource) return;
   monstersDataSource = await fetchMonsters();
-  const dataSource = monstersDataSource
+  select2Data = monstersDataSource
     .slice()
     .sort((a, b) => a.name.localeCompare(b.name))
     .map(m => ({ id: m.id, text: m.name }));
@@ -269,7 +270,7 @@ async function loadSelect2Data() {
     allowClear: true,
     width: 'resolve',
     minimumResultsForSearch: 0,
-    data: dataSource
+    data: select2Data
   });
 }
 function updateResetTimer() {
