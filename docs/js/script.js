@@ -8,6 +8,7 @@ var amountsGuessed = 0;
 var mode = 'normal';
 var correctShown = false;
 var infiniteStreak = 0;
+const _nativeRandom = Math.random;
 
 
 $(document).ready(function () {
@@ -18,6 +19,8 @@ async function initNormalMode() {
   mode = 'normal';
   $('#resetTimer').show();
   $('#streakDisplay').hide();
+  $('#attempts .rowGuessed').remove();
+  $("#firstGuessText").show();
   await loadSelect2Data();
   const todayKey = new Date().toISOString().split('T')[0];
   cacheKey = `deepwokendle_${todayKey}`;
@@ -25,7 +28,7 @@ async function initNormalMode() {
   amountsGuessed = saved != null ? parseInt(saved, 10) : 0;
   if (amountsGuessed) $('#amountsGuessed').text(`Tries: ${amountsGuessed}/∞`);
   Math.seedrandom(todayKey);
-  const idx = Math.floor(Math.random() * monstersDataSource.length);
+  let idx = Math.floor(Math.random() * monstersDataSource.length);
   randomCharacter = monstersDataSource[idx];
   checkIfAlreadyWon();
 }
@@ -43,9 +46,10 @@ async function initInfiniteMode() {
   $('#amountsGuessed').text(`Tries: 0/5`);
   $('#attempts .rowGuessed').remove();
   $("#firstGuessText").show();
-  randomCharacter = monstersDataSource[
-    Math.floor(Math.random() * monstersDataSource.length)
-  ];
+  Math.random = _nativeRandom;
+  let idx = Math.floor(Math.random() * monstersDataSource.length);
+  randomCharacter = monstersDataSource[idx];
+  console.log(randomCharacter);
   guessInput.prop('disabled', false);
   $(".btn").prop("disabled", false).removeClass("disabled");
 }
@@ -56,6 +60,7 @@ function updateStreakUI() {
 }
 
 function guessCharacter() {
+  console.log(randomCharacter);
   if (mode === 'normal') {
     amountsGuessed++;
     localStorage.setItem('amountsGuessed', amountsGuessed);
@@ -201,8 +206,6 @@ function checkIfAlreadyWon() {
 }
 
 function showCorrectCharacter() {
-  if (correctShown) return;
-  correctShown = true;
   guessInput.val(randomCharacter.id).trigger('change');
   let html = `<div class="col-md-12 rowGuessed firstGuess">`;
   $("#firstGuessText").css("display", "none");
