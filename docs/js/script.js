@@ -49,7 +49,6 @@ async function initInfiniteMode() {
   Math.random = _nativeRandom;
   let idx = Math.floor(Math.random() * monstersDataSource.length);
   randomCharacter = monstersDataSource[idx];
-  console.log(randomCharacter);
   guessInput.prop('disabled', false);
   $(".btn").prop("disabled", false).removeClass("disabled");
 }
@@ -60,7 +59,6 @@ function updateStreakUI() {
 }
 
 function guessCharacter() {
-  console.log(randomCharacter);
   if (mode === 'normal') {
     amountsGuessed++;
     localStorage.setItem('amountsGuessed', amountsGuessed);
