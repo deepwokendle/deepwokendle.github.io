@@ -134,10 +134,6 @@ input:focus {
 }
 
 @media (max-width: 480px) {
-    .rowsContainer {
-        gap: 0.25rem;
-    }
-
     .columns,
     .rowGuessed {
         grid-template-columns: repeat(5, minmax(50px, 1fr));
