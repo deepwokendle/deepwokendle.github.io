@@ -26,6 +26,10 @@ body {
     background-color: lightgreen !important;
 }
 
+.partial{
+    background-color: orange !important;
+}
+
 .wrong {
     background-color: red !important;
 }
@@ -94,7 +98,6 @@ input:focus {
     scrollbar-gutter: stable always;
     -webkit-overflow-scrolling: touch;
     background: var(--background);
-
 }
 
 #streakDisplay {
@@ -104,8 +107,9 @@ input:focus {
 
 .columns {
     display: grid;
-    grid-template-columns: repeat(5, minmax(65px, 1fr));
+    grid-template-columns: repeat(7, minmax(65px, 1fr));
     background-color: var(--container-background);
+    white-space: nowrap;
     position: sticky;
     top: 0;
     height: fit-content;
@@ -114,7 +118,7 @@ input:focus {
 
 .rowGuessed {
     display: grid;
-    grid-template-columns: repeat(5, minmax(65px, 1fr));
+    grid-template-columns: repeat(7, minmax(65px, 1fr));
     gap: 0.5rem;
     align-items: center;
     padding: 0.2rem 0.5rem;
@@ -136,7 +140,7 @@ input:focus {
 @media (max-width: 480px) {
     .columns,
     .rowGuessed {
-        grid-template-columns: repeat(5, minmax(50px, 1fr));
+        grid-template-columns: repeat(7, minmax(50px, 1fr));
     }
 
     .column-title {

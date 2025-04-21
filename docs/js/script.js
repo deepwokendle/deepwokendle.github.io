@@ -62,7 +62,7 @@ function guessCharacter() {
   } else {
     amountsGuessed++;
   }
-  $('#amountsGuessed').text(`Tries: ${amountsGuessed}/${mode=='infinite' ? '5' : '∞'}`);
+  $('#amountsGuessed').text(`Tries: ${amountsGuessed}/${mode == 'infinite' ? '5' : '∞'}`);
   const guessedId = guessInput.val();
   const monster = monstersDataSource.find(m => m.id == guessedId);
   const correct = monster.id == randomCharacter.id;
@@ -79,19 +79,28 @@ function guessCharacter() {
         </div>
       </div>`;
 
-  ['name', 'fightingStyle', 'mainHabitat', 'humanoid'].forEach((field, idx) => {
-    const isCorrect = monster[field] == randomCharacter[field];
-    const display = field === 'humanoid' ? (monster[field] ? '✓' : 'X') : monster[field];
-    html += `
-        <div class="flip-card">
-          <div class="flip-card-inner">
-            <div class="flip-card-front"></div>
-            <div class="flip-card-back item border ${isCorrect ? 'correct' : 'wrong'}">
-              ${display}
+  ['name', 'gives', 'element', 'category', 'mainHabitat', 'humanoid']
+    .forEach(field => {
+      let display = field === 'gives'
+        ? monster.gives.join(', ')
+        : field === 'humanoid'
+          ? (monster.humanoid ? '✓' : 'X')
+          : monster[field];
+
+      let cssClass = field === 'gives'
+        ? compareSets(randomCharacter.gives, monster.gives)
+        : (monster[field] === randomCharacter[field] ? 'correct' : 'wrong');
+
+      html += `
+          <div class="flip-card">
+            <div class="flip-card-inner">
+              <div class="flip-card-front"></div>
+              <div class="flip-card-back item border ${cssClass}">
+                ${display}
+              </div>
             </div>
-          </div>
-        </div>`;
-  });
+          </div>`;
+    });
   $("#firstGuessText").hide();
   html += `</div>`;
 
@@ -101,7 +110,7 @@ function guessCharacter() {
     .insertAdjacentHTML('afterend', html);
 
   const cards = document.querySelectorAll('.flip-card');
-  if (!correct && amountsGuessed >= 5 && mode =='infinite') {
+  if (!correct && amountsGuessed >= 5 && mode == 'infinite') {
     Swal.fire({
       title: `You lost all of your tries! It was ${randomCharacter.name}`,
       text: 'Try again?',
@@ -117,7 +126,7 @@ function guessCharacter() {
       if (result.isConfirmed) {
         initInfiniteMode();
       }
-      else if(result.isDenied){
+      else if (result.isDenied) {
         $('#attempts .rowGuessed').remove();
         initNormalMode();
       }
@@ -156,7 +165,7 @@ function guessCharacter() {
           if (result.isConfirmed) {
             initInfiniteMode();
           }
-          else if(result.isDenied){
+          else if (result.isDenied) {
             $('#attempts .rowGuessed').remove();
             initNormalMode();
           }
@@ -207,7 +216,7 @@ function showCorrectCharacter() {
         </div>
       </div>`;
 
-  ['name', 'fightingStyle', 'mainHabitat', 'humanoid'].forEach((field) => {
+  ['name', 'gives', 'element', 'category', 'mainHabitat', 'humanoid'].forEach((field, idx) => {
     const display = field === 'humanoid' ? (randomCharacter[field] ? '✓' : 'X') : randomCharacter[field];
     html += `
         <div class="flip-card">
@@ -236,19 +245,30 @@ function showCorrectCharacter() {
   });
 }
 
+function compareSets(correctLoot, guessLoot) {
+  const correctSet = new Set(correctLoot);
+  const guessSet = new Set(guessLoot);
+  const intersectionSize = [...guessSet].filter(i => correctSet.has(i)).length;
+  if (intersectionSize === correctLoot.length) return 'correct';
+  if (intersectionSize > 0) return 'partial';
+  return 'wrong';
+}
+
 async function fetchMonsters() {
   try {
     const response = await fetch("https://deepwokendle.onrender.com/api/monsters");
     if (!response.ok) throw new Error("Error while trying to fetch monsters");
 
     const monsters = await response.json();
-    return monsters.map(monster => ({
-      id: monster.id,
-      name: monster.name,
-      picture: monster.picture,
-      fightingStyle: monster.fightingStyle,
-      mainHabitat: monster.mainHabitat,
-      humanoid: monster.humanoid
+    return monsters.map(m => ({
+      id: m.id,
+      name: m.name,
+      picture: m.picture,
+      mainHabitat: m.mainHabitat,
+      humanoid: m.humanoid,
+      element: m.element,
+      category: m.category,
+      gives: m.gives
     }));
   } catch (error) {
     console.error("Error while trying to fetch monsters:", error);
@@ -293,10 +313,10 @@ function toggleSidebar() {
   sidebar.classList.toggle('open');
   sidebar.classList.toggle('border');
   overlay.classList.toggle('visible');
-  setTimeout(function(){
+  setTimeout(function () {
     $('#hamburger').toggle(!$('#sidebar').hasClass('open'));
-  },$('#sidebar').hasClass('open') ? 0 : 150);
-  
+  }, $('#sidebar').hasClass('open') ? 0 : 150);
+
 }
 
 hamburger.addEventListener('click', toggleSidebar);
@@ -315,3 +335,9 @@ document.getElementById('infiniteMode').addEventListener('click', () => {
 });
 
 setInterval(updateResetTimer, 1000);
+
+var item = document.getElementById("attempts");
+window.addEventListener("wheel", function (e) {
+  if (e.deltaY > 0) item.scrollLeft += 20;
+  else item.scrollLeft -= 20;
+});
