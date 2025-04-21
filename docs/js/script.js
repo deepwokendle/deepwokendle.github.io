@@ -250,12 +250,18 @@ function showCorrectCharacter() {
 
 function compareSets(correctLoot, guessLoot) {
   const correctSet = new Set(correctLoot);
-  const guessSet = new Set(guessLoot);
-  const intersectionSize = [...guessSet].filter(i => correctSet.has(i)).length;
-  if (intersectionSize === correctLoot.length) return 'correct';
-  if (intersectionSize > 0) return 'partial';
+  const guessSet   = new Set(guessLoot);
+
+  const intersectionSize = [...guessSet].filter(x => correctSet.has(x)).length;
+  if (intersectionSize === correctSet.size && guessSet.size === correctSet.size) {
+    return 'correct';
+  }
+  if (intersectionSize > 0) {
+    return 'partial';
+  }
   return 'wrong';
 }
+
 
 async function fetchMonsters() {
   try {
