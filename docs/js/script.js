@@ -15,7 +15,16 @@ $(document).ready(function () {
   initNormalMode();
 });
 
+function showLoading() {
+  $('#loading-overlay').show();
+}
+function hideLoading() {
+  $('#loading-overlay').hide();
+}
+
 async function initNormalMode() {
+  showLoading();
+  $('#guessBtn').text("GUESS").off('click').on('click', guessCharacter);
   mode = 'normal';
   $('#resetTimer').show();
   $('#streakDisplay').hide();
@@ -23,6 +32,7 @@ async function initNormalMode() {
   $("#firstGuessText").show();
   $('.columns').css('margin-top', '0px');
   await loadSelect2Data();
+  hideLoading();
   const todayKey = new Date().toISOString().split('T')[0];
   cacheKey = `deepwokendle_${todayKey}`;
   const saved = localStorage.getItem('amountsGuessed');
@@ -116,40 +126,51 @@ function guessCharacter() {
 
   const cards = document.querySelectorAll('.flip-card');
   if (!correct && amountsGuessed >= 5 && mode == 'infinite') {
+    let tempStreak = infiniteStreak;
+    infiniteStreak = 0;
+    localStorage.setItem('infiniteKillstreak', infiniteStreak);
     Swal.fire({
-      title: `You lost all of your tries! It was ${randomCharacter.name}`,
+      title: `You lost all of your tries and streak of ${tempStreak}! The character was ${randomCharacter.name}`,
       text: 'Try again?',
       showDenyButton: true,
       icon: 'error',
       confirmButtonText: 'Yes!',
-      denyButtonText: `No!`
-
+      denyButtonText: `No!`,
+      showCloseButton: true
     }).then((result) => {
-      infiniteStreak = 0;
-      localStorage.setItem('infiniteKillstreak', infiniteStreak);
       updateStreakUI();
       if (result.isConfirmed) {
         initInfiniteMode();
       }
-      else if (result.isDenied) {
-        $('#attempts .rowGuessed').remove();
-        initNormalMode();
+      else if(result.isDenied || result.dismiss){
+        $('#guessBtn')
+        .text('RETRY')
+        .off('click')
+        .on('click', () => { 
+          initInfiniteMode();
+          $('#guessBtn')
+            .text('GUESS')
+            .off('click')
+            .on('click', guessCharacter);
+        });
       }
     });
   }
   cards.forEach((card, i) => {
     setTimeout(() => {
       card.classList.add('flipped');
-      fitty('.item', {
-        minSize: 7, 
-        maxSize: 12,
-        observe: true 
+      textFit(document.querySelectorAll('.item'), {
+        alignHoriz: true,
+        alignVert: true,
+        multiLine: true,
+        maxFontSize: 12,  
+        minFontSize: 6  
       });
     }, i * 300);
   })
 
   setTimeout(() => {
-    
+
     if (correct) {
       if (mode === 'normal') {
         Swal.fire({
@@ -168,7 +189,8 @@ function guessCharacter() {
           text: 'Go to the next round?',
           icon: 'success',
           confirmButtonText: 'Yes!',
-          denyButtonText: `No!`
+          denyButtonText: `No!`,
+          showCloseButton: true
         }).then((result) => {
           infiniteStreak++;
           localStorage.setItem('infiniteKillstreak', infiniteStreak);
@@ -176,9 +198,17 @@ function guessCharacter() {
           if (result.isConfirmed) {
             initInfiniteMode();
           }
-          else if (result.isDenied) {
-            $('#attempts .rowGuessed').remove();
-            initNormalMode();
+          else if(result.isDenied || result.dismiss){
+            $('#guessBtn')
+            .text('NEXT')
+            .off('click')
+            .on('click', () => { 
+              initInfiniteMode();
+              $('#guessBtn')
+                .text('GUESS')
+                .off('click')
+                .on('click', guessCharacter);
+            });
           }
         });
       }
@@ -204,7 +234,7 @@ function checkIfAlreadyWon() {
 
     Swal.fire({
       title: 'You already played today!',
-      text: `You have already guessed today's character, come back tomorrow!`,
+      html: `You have already guessed today's character, come back tomorrow or play the <a href="#" onclick="initInfiniteMode(); Swal.close();" style="font-weight:bold; text-decoration:underline; color: var(--background);">Infinite mode</a>!`,
       icon: 'info',
       confirmButtonText: 'Okay.'
     });
@@ -250,13 +280,20 @@ function showCorrectCharacter() {
   cards.forEach((card, i) => {
     setTimeout(() => {
       card.classList.add('flipped');
+      textFit(document.querySelectorAll('.item'), {
+        alignHoriz: true,
+        alignVert: true,
+        multiLine: true,
+        maxFontSize: 12,  
+        minFontSize: 6  
+      });
     }, i * 200);
   });
 }
 
 function compareSets(correctLoot, guessLoot) {
   const correctSet = new Set(correctLoot);
-  const guessSet   = new Set(guessLoot);
+  const guessSet = new Set(guessLoot);
 
   const intersectionSize = [...guessSet].filter(x => correctSet.has(x)).length;
   if (intersectionSize === correctSet.size && guessSet.size === correctSet.size) {

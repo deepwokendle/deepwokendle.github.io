@@ -15,6 +15,19 @@
 </head>
 
 <body>
+  <div id="loading-overlay" style="
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    ">
+    <div class="spinner"></div>
+  </div>
+
   <section id="mainGame">
 
     <div id="container" class="border">
@@ -70,7 +83,7 @@
         </select>
       </div>
       <div class="center">
-        <button class="btn border" onclick="guessCharacter()">GUESS</button>
+        <button class="btn border" id="guessBtn">GUESS</button>
       </div>
       <div class="center">
         <div id="resetTimer"></div>
@@ -88,7 +101,7 @@
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://unpkg.com/fitty/dist/fitty.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/textfit/2.4.0/textFit.min.js"></script>
   <script src="js/script.js"></script>
 </body>
 
