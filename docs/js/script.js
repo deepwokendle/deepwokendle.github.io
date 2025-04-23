@@ -81,7 +81,7 @@ function guessCharacter() {
   const guessedId = guessInput.val();
   const monster = monstersDataSource.find(m => m.id == guessedId);
   const correct = monster.id == randomCharacter.id;
-
+  if(correct) $("#guessBtn").off('click');
   let html = `<div class="col-md-12 rowGuessed firstGuess">`;
   $("#firstGuessText").css("display", "none")
   html += `
