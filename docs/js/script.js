@@ -175,7 +175,7 @@ function guessCharacter() {
       if (mode === 'normal') {
         Swal.fire({
           title: 'Success!',
-          text: 'You guessed it right!',
+          html: `You guessed it right! If you want to play more, go to the <a href="#" onclick="initInfiniteMode(); Swal.close();" style="font-weight:bold; text-decoration:underline; color: var(--background);">Infinite mode</a> or wait until tomorrow!`,
           icon: 'success',
           confirmButtonText: 'Nice'
         });
