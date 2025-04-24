@@ -26,17 +26,23 @@ h1 {
     color: #18221a;
 }
 
-#loading-overlay { display: flex; }
-.spinner {
-  border: 8px solid var(--container-background);
-  border-top: 8px solid #18221a;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  animation: spin 500ms ease-in infinite;
+#loading-overlay {
+    display: flex;
 }
+
+.spinner {
+    border: 8px solid var(--container-background);
+    border-top: 8px solid #18221a;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 500ms ease-in infinite;
+}
+
 @keyframes spin {
-  to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .correct {
@@ -130,9 +136,9 @@ input:focus {
     position: sticky;
     top: 0;
     z-index: 10;
-    background: var(--container-background);   
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
+    background: var(--container-background);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
 .columns {
     display: grid;
@@ -229,10 +235,11 @@ input:focus {
     aspect-ratio: 1/1;
 }
 
-.textFitted{
+.textFitted {
     padding: 2px !important;
-    display:flex !important;
+    display: flex !important;
 }
+
 .itemImg {
     min-width: 65px;
     flex: 1 1 75px;
@@ -320,24 +327,86 @@ input:focus {
     justify-content: center;
 }
 
-.kofi-btn {
+.fab-container {
     position: fixed;
-    bottom: 15px;
-    right: 15px;
-    width: 50px;
-    height: 50px;
+    bottom: 1rem;
+    right: 1rem;
     z-index: 1000;
 }
 
-.kofi-btn img {
-    width: 100%;
-    height: auto;
-    display: block;
+.fab-main {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--background);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: 200ms;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.kofi-btn img:hover {
-    width: 60px;
+.fab-main:hover{
+    transform: scale(1.1);
+    background: var(--container-background);
+}
+
+.fab-main:hover span {
+    color:black;
+}
+
+.fab-icon {
+    font-size: 32px;
+    color: #fff;
+    display: inline-block;
+    transition: transform .3s ease;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+.fab-actions {
+    position: absolute;
+    bottom: 70px;
+    right: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: opacity .3s ease, transform .3s ease;
+}
+
+.fab-item {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform .2s ease;
+}
+
+.fab-item:hover {
+    transform: scale(1.1);
+}
+
+.fab-item img{
+    max-width:50px;
+    min-width:30px;
+}
+
+.fab-container.open .fab-actions {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.fab-container.open .fab-icon {
+    transform: rotate(90deg);
 }
 
 /* Sidebar */

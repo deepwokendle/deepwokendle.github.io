@@ -9,10 +9,15 @@ var mode = 'normal';
 var correctShown = false;
 var infiniteStreak = 0;
 const _nativeRandom = Math.random;
-
+const fab = document.querySelector('.fab-container');
+const moreInfoBtn = fab.querySelector('.fab-main');
 
 $(document).ready(function () {
   initNormalMode();
+});
+
+moreInfoBtn.addEventListener('click', () => {
+  fab.classList.toggle('open');
 });
 
 function showLoading() {
