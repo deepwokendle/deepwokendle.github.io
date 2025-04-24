@@ -20,6 +20,12 @@ moreInfoBtn.addEventListener('click', () => {
   fab.classList.toggle('open');
 });
 
+document.addEventListener('click', e => {
+  if (fab.classList.contains('open') && !fab.contains(e.target)) {
+    fab.classList.remove('open');
+  }
+});
+
 function showLoading() {
   $('#loading-overlay').show();
 }

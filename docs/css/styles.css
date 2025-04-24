@@ -348,13 +348,15 @@ input:focus {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.fab-main:hover{
-    transform: scale(1.1);
-    background: var(--container-background);
-}
+@media (hover: hover) and (pointer: fine) {
+    .fab-main:hover {
+        transform: scale(1.1);
+        background: var(--container-background);
+    }
 
-.fab-main:hover span {
-    color:black;
+    .fab-main:hover span {
+        color: black;
+    }
 }
 
 .fab-icon {
