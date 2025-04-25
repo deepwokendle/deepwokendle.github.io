@@ -3,6 +3,7 @@ var randomCharacter = null;
 var monstersDataSource = null;
 var select2Data = null;
 var cacheKey = null;
+var dailyCountKey = null;
 var alreadyGuessed = null;
 var amountsGuessed = 0;
 var mode = 'normal';
@@ -46,7 +47,8 @@ async function initNormalMode() {
   hideLoading();
   const todayKey = new Date().toISOString().split('T')[0];
   cacheKey = `deepwokendle_${todayKey}`;
-  const saved = localStorage.getItem('amountsGuessed');
+  dailyCountKey = `${cacheKey}_amountsGuessed`; 
+  const saved = localStorage.getItem(dailyCountKey);
   amountsGuessed = saved != null ? parseInt(saved, 10) : 0;
   if (amountsGuessed) $('#amountsGuessed').text(`Tries: ${amountsGuessed}/∞`);
   Math.seedrandom(todayKey);
@@ -84,7 +86,7 @@ function updateStreakUI() {
 function guessCharacter() {
   if (mode === 'normal') {
     amountsGuessed++;
-    localStorage.setItem('amountsGuessed', amountsGuessed);
+    localStorage.setItem(dailyCountKey, amountsGuessed);
   } else {
     amountsGuessed++;
   }
