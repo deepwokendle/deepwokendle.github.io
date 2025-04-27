@@ -76,6 +76,7 @@ async function initInfiniteMode() {
   randomCharacter = monstersDataSource[idx];
   guessInput.prop('disabled', false);
   $(".btn").prop("disabled", false).removeClass("disabled");
+  $("#guessBtn").off('click').on('click', guessCharacter);
 }
 
 function updateStreakUI() {
