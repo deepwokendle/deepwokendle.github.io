@@ -10,5 +10,7 @@ namespace DeepwokendleApi.DTOS
         public string Element { get; set; }
         public string Category { get; set; }
         public IEnumerable<string> Gives { get; set; }
+        public IEnumerable<string> Locations { get; set; }
+
     }
 }

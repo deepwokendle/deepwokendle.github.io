@@ -12,5 +12,6 @@ public class Monster
     public int CategoryId { get; set; }
     public Category Category { get; set; }
     public ICollection<Loot> LootDatas { get; set; }
+    public ICollection<Location> Locations { get; set; }
     public string Gives { get; set; }
 }

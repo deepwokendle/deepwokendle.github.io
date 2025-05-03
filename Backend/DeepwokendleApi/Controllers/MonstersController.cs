@@ -14,7 +14,6 @@ namespace DeepwokendleApi.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<MonsterDto>> Get()
         {
-            // 1) lista fixa de monstros, já com ElementId e CategoryId
             var monsters = new List<Monster>
             {
                 new Monster { Id =  1, Name = "Sharko",              Picture = "/img/sharko.png",               MainHabitat = "Viper's Jaw",          Humanoid = false, ElementId = 1, CategoryId = 2 },
@@ -82,31 +81,32 @@ namespace DeepwokendleApi.Controllers
 
             var monsterLocationMap = new Dictionary<int, List<int>>
             {
-                {  1, new List<int>{  1, 19, 20 } },  // Sharko
-                {  2, new List<int>{ 21, 22      } },  // Akira
-                {  3, new List<int>{  3, 17      } },  // Owl
-                {  4, new List<int>{ 21, 22, 23 } },  // Chaser
-                {  5, new List<int>{ 21, 22, 23 } },  // Duke Erisia
-                {  6, new List<int>{ 22         } },  // Lord Regent
-                {  7, new List<int>{ 23         } },  // Ferryman
-                {  8, new List<int>{ 22         } },  // Yun'Shul
-                {  9, new List<int>{ 19, 20     } },  // Mudskipper
-                { 10, new List<int>{ 19         } },  // Lower Bandit
-                { 11, new List<int>{  2, 19, 20,  8 } },  // Thresher
-                { 12, new List<int>{  4,  9, 16  } },  // Nautilodaunt
-                { 13, new List<int>{ 20         } },  // Gigamed
-                { 14, new List<int>{ 11         } },  // Bone Keeper
-                { 15, new List<int>{ 19, 13, 16 } },  // Mudskipper Broodlord
-                { 16, new List<int>{ 19, 14     } },  // Enforcer
-                { 17, new List<int>{ 23         } },  // Scion of Ethiron
-                { 18, new List<int>{  5, 19     } },  // Lionfish
-                { 19, new List<int>{  7, 22, 23, 12 } },  // Dread Serpent
-                { 20, new List<int>{ 22         } },  // Klaris Llfiend
-                { 21, new List<int>{ 18, 22     } },  // The Meat Lord
-                { 22, new List<int>{ 21, 22     } },  // Karliah
-                { 23, new List<int>{ 19,  7     } },  // Immortal Guardian
+                {  1, new List<int>{ 1, 3, 11 } },  // Sharko
+                {  2, new List<int>{ 1 } },  // Akira
+                {  3, new List<int>{ 1, 3, 9 } },  // Owl
+                {  4, new List<int>{ 6 } },  // Chaser
+                {  5, new List<int>{ 3 } },  // Duke Erisia
+                {  6, new List<int>{ 2 } },  // Lord Regent
+                {  7, new List<int>{ 10, 7 } },  // Ferryman
+                {  8, new List<int>{ 1 } },  // Yun'Shul
+                {  9, new List<int>{ 1, 4, 3 } },  // Mudskipper
+                { 10, new List<int>{ 3 } },  // Lower Bandit
+                { 11, new List<int>{ 1, 8 } },  // Thresher
+                { 12, new List<int>{ 1 } },  // Nautilodaunt
+                { 13, new List<int>{ 1 } },  // Gigamed
+                { 14, new List<int>{ 6 } },  // Bone Keeper
+                { 15, new List<int>{ 1, 13 } },  // Mudskipper Broodlord
+                { 16, new List<int>{ 1 } },  // Enforcer
+                { 17, new List<int>{ 6 } },  // Scion of Ethiron
+                { 18, new List<int>{ 1, 13, 7 } },  // Lionfish
+                { 19, new List<int>{ 7 } },  // Dread Serpent
+                { 20, new List<int>{ 1 } },  // Klaris Llfiend
+                { 21, new List<int>{ 8 } },  // The Meat Lord
+                { 22, new List<int>{ 2 } },  // Karliah
+                { 23, new List<int>{ 5 } },  // Immortal Guardian
+                { 24, new List<int>{ 12, 7 } },  // Primadon
+                { 25, new List<int>{ 2, 6 } },  // Kennith
             };
-
 
             var dtos = monsters
                 .Select(m => new MonsterDto
@@ -123,7 +123,13 @@ namespace DeepwokendleApi.Controllers
                             .Select(id => LootData.Loots.First(l => l.Id == id).Name)
                             .OrderBy(name => name)
                             .ToList()
-                        : new List<string>()
+                        : new List<string>(),
+                    Locations = monsterLocationMap.TryGetValue(m.Id, out var locationIds)
+                        ? locationIds
+                            .Select(id => LocationData.GeneralizedLocations.First(l => l.Id == id).Name)
+                            .OrderBy(name => name)
+                            .ToList()
+                        : new List<string>(),
                 })
                 .ToList();
 
