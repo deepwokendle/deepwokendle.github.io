@@ -4,7 +4,6 @@ namespace DeepwokendleApi.Data
 {
     public static class LootData
     {
-        // 1) todas as categorias, extraídas do seu bloco sem repetição
         public static readonly List<LootCategory> Categories = new()
         {
             new LootCategory { Id = 1, Name = "Monster Parts" },
@@ -17,7 +16,6 @@ namespace DeepwokendleApi.Data
             new LootCategory { Id = 8, Name = "Chest" },
         };
 
-        // 2) todos os loots, ligados à categoria
         public static readonly List<Loot> Loots = new()
         {
             new Loot { Id =  1, Name = "Megalodaunt Hide",            CategoryId = 1 },
@@ -48,9 +46,12 @@ namespace DeepwokendleApi.Data
             new Loot { Id = 20, Name = "Attunement Stones",          CategoryId = 7 },
             new Loot { Id = 21, Name = "Unbound Stat",               CategoryId = 7 },
             new Loot { Id = 22, Name = "MISC",                       CategoryId = 7 },
+            new Loot { Id = 24, Name = "Knowledge",                  CategoryId = 7 },
+            new Loot { Id = 26, Name = "Quest Item",                 CategoryId = 7 },
 
             // Chest
             new Loot { Id = 23, Name = "Chest",                      CategoryId = 8 },
+            new Loot { Id = 25, Name = "Many Chests",                CategoryId = 8 },
         };
     }
 }

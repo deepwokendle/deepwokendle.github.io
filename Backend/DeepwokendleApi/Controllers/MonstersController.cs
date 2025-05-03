@@ -40,6 +40,8 @@ namespace DeepwokendleApi.Controllers
                 new Monster { Id = 21, Name = "The Meat Lord",       Picture = "/img/TheMeatLord.jpg",          MainHabitat = "Starswept Valley",     Humanoid = true,  ElementId = 9, CategoryId = 3 },
                 new Monster { Id = 22, Name = "Karliah",             Picture = "/img/Karliah.webp",             MainHabitat = "Etris",                Humanoid = true,  ElementId = 1, CategoryId = 3 },
                 new Monster { Id = 23, Name = "Immortal Guardian",   Picture = "/img/IMMGUARD.webp",            MainHabitat = "Crypt of the Unbroken",Humanoid = true,  ElementId = 1, CategoryId = 6 },
+                new Monster { Id = 24, Name = "Primadon",            Picture = "/img/Primadon.webp",            MainHabitat = "Monkey's Paw"         ,Humanoid = false, ElementId = 1, CategoryId = 4 },
+                new Monster { Id = 25, Name = "Kennith",             Picture = "/img/Kennith.webp",             MainHabitat = "Etris"                ,Humanoid = true,  ElementId = 1, CategoryId = 3 },
             };
             foreach (var m in monsters)
             {
@@ -50,6 +52,35 @@ namespace DeepwokendleApi.Controllers
             }
 
             var monsterLootMap = new Dictionary<int, List<int>>
+            {
+                {  1, new List<int>{  1, 19, 20 } },  // Sharko
+                {  2, new List<int>{ 21, 22      } },  // Akira
+                {  3, new List<int>{  3, 17      } },  // Owl
+                {  4, new List<int>{ 21, 22, 23, 24 } },  // Chaser
+                {  5, new List<int>{ 21, 22, 23, 24 } },  // Duke Erisia
+                {  6, new List<int>{ 22, 26     } },  // Lord Regent
+                {  7, new List<int>{ 25, 24     } },  // Ferryman
+                {  8, new List<int>{ 22         } },  // Yun'Shul
+                {  9, new List<int>{ 19, 20     } },  // Mudskipper
+                { 10, new List<int>{ 19         } },  // Lower Bandit
+                { 11, new List<int>{  2, 19, 20, 8 } },  // Thresher
+                { 12, new List<int>{  4,  9, 16 } },  // Nautilodaunt
+                { 13, new List<int>{ 20         } },  // Gigamed
+                { 14, new List<int>{ 11, 24     } },  // Bone Keeper
+                { 15, new List<int>{ 19, 13, 16 } },  // Mudskipper Broodlord
+                { 16, new List<int>{ 19, 14     } },  // Enforcer
+                { 17, new List<int>{ 23, 24     } },  // Scion of Ethiron
+                { 18, new List<int>{  5, 19     } },  // Lionfish
+                { 19, new List<int>{  7, 22, 12 } },  // Dread Serpent
+                { 20, new List<int>{ 22, 24     } },  // Klaris Llfiend
+                { 21, new List<int>{ 18, 22     } },  // The Meat Lord
+                { 22, new List<int>{ 21, 22     } },  // Karliah
+                { 23, new List<int>{ 19,  7     } },  // Immortal Guardian
+                { 24, new List<int>{ 21, 22, 24, 25 } },  // Primadon
+                { 25, new List<int>{ 22, 26     } },  // Kennith
+            };
+
+            var monsterLocationMap = new Dictionary<int, List<int>>
             {
                 {  1, new List<int>{  1, 19, 20 } },  // Sharko
                 {  2, new List<int>{ 21, 22      } },  // Akira
@@ -75,6 +106,7 @@ namespace DeepwokendleApi.Controllers
                 { 22, new List<int>{ 21, 22     } },  // Karliah
                 { 23, new List<int>{ 19,  7     } },  // Immortal Guardian
             };
+
 
             var dtos = monsters
                 .Select(m => new MonsterDto
