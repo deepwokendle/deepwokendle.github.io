@@ -271,8 +271,12 @@ function showCorrectCharacter() {
       </div>`;
 
   ['name', 'gives', 'element', 'category', 'locations', 'humanoid'].forEach((field, idx) => {
-    const display = field === 'humanoid' ? (randomCharacter[field] ? '✓' : 'X') : randomCharacter[field];
-    html += `
+    const display =
+      field === 'gives'      ? randomCharacter.gives.join(', ')
+    : field === 'locations'  ? randomCharacter.locations.join(', ')
+    : field === 'humanoid'   ? (randomCharacter.humanoid ? '✓' : 'X')
+    : randomCharacter[field];
+      html += `
         <div class="flip-card">
           <div class="flip-card-inner">
             <div class="flip-card-front"></div>
@@ -340,7 +344,6 @@ async function fetchMonsters() {
     const response = await fetch("https://deepwokendle.onrender.com/api/monsters");
     if (!response.ok) throw new Error("Error while trying to fetch monsters");
     const monsters = await response.json();
-    console.log(monsters);
     return monsters.map(m => ({
       id: m.id,
       name: m.name,
