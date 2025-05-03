@@ -47,7 +47,7 @@ async function initNormalMode() {
   hideLoading();
   const todayKey = new Date().toISOString().split('T')[0];
   cacheKey = `deepwokendle_${todayKey}`;
-  dailyCountKey = `${cacheKey}_amountsGuessed`; 
+  dailyCountKey = `${cacheKey}_amountsGuessed`;
   const saved = localStorage.getItem(dailyCountKey);
   amountsGuessed = saved != null ? parseInt(saved, 10) : 0;
   if (amountsGuessed) $('#amountsGuessed').text(`Tries: ${amountsGuessed}/∞`);
@@ -95,7 +95,7 @@ function guessCharacter() {
   const guessedId = guessInput.val();
   const monster = monstersDataSource.find(m => m.id == guessedId);
   const correct = monster.id == randomCharacter.id;
-  if(correct) $("#guessBtn").off('click');
+  if (correct) $("#guessBtn").off('click');
   let html = `<div class="col-md-12 rowGuessed firstGuess">`;
   $("#firstGuessText").css("display", "none")
   html += `
@@ -108,19 +108,20 @@ function guessCharacter() {
         </div>
       </div>`;
 
-  ['name', 'gives', 'element', 'category', 'mainHabitat', 'humanoid']
+  ['name', 'gives', 'element', 'category', 'locations', 'humanoid']
     .forEach(field => {
-      let display = field === 'gives'
-        ? monster.gives.join(', ')
-        : field === 'humanoid'
-          ? (monster.humanoid ? '✓' : 'X')
-          : monster[field];
+      let display =
+        field === 'gives' ? monster.gives.join(', ')
+          : field === 'locations' ? monster.locations.join(', ')
+            : field === 'humanoid' ? (monster.humanoid ? '✓' : 'X')
+              : monster[field];
 
-      let cssClass = field === 'gives'
-        ? compareSets(randomCharacter.gives, monster.gives)
-        : (monster[field] === randomCharacter[field] ? 'correct' : 'wrong');
+      let cssClass =
+        field === 'gives' ? compareSets(randomCharacter.gives, monster.gives) : 
+        field === 'locations' ? compareLocations(randomCharacter.locations, monster.locations) : 
+        (monster[field] === randomCharacter[field] ? 'correct' : 'wrong');
 
-      html += `
+        html += `
           <div class="flip-card">
             <div class="flip-card-inner">
               <div class="flip-card-front"></div>
@@ -156,17 +157,17 @@ function guessCharacter() {
       if (result.isConfirmed) {
         initInfiniteMode();
       }
-      else if(result.isDenied || result.dismiss){
+      else if (result.isDenied || result.dismiss) {
         $('#guessBtn')
-        .text('RETRY')
-        .off('click')
-        .on('click', () => { 
-          initInfiniteMode();
-          $('#guessBtn')
-            .text('GUESS')
-            .off('click')
-            .on('click', guessCharacter);
-        });
+          .text('RETRY')
+          .off('click')
+          .on('click', () => {
+            initInfiniteMode();
+            $('#guessBtn')
+              .text('GUESS')
+              .off('click')
+              .on('click', guessCharacter);
+          });
       }
     });
   }
@@ -177,8 +178,8 @@ function guessCharacter() {
         alignHoriz: true,
         alignVert: true,
         multiLine: true,
-        maxFontSize: 12,  
-        minFontSize: 6  
+        maxFontSize: 12,
+        minFontSize: 6
       });
     }, i * 300);
   })
@@ -212,17 +213,17 @@ function guessCharacter() {
           if (result.isConfirmed) {
             initInfiniteMode();
           }
-          else if(result.isDenied || result.dismiss){
+          else if (result.isDenied || result.dismiss) {
             $('#guessBtn')
-            .text('NEXT')
-            .off('click')
-            .on('click', () => { 
-              initInfiniteMode();
-              $('#guessBtn')
-                .text('GUESS')
-                .off('click')
-                .on('click', guessCharacter);
-            });
+              .text('NEXT')
+              .off('click')
+              .on('click', () => {
+                initInfiniteMode();
+                $('#guessBtn')
+                  .text('GUESS')
+                  .off('click')
+                  .on('click', guessCharacter);
+              });
           }
         });
       }
@@ -269,7 +270,7 @@ function showCorrectCharacter() {
         </div>
       </div>`;
 
-  ['name', 'gives', 'element', 'category', 'mainHabitat', 'humanoid'].forEach((field, idx) => {
+  ['name', 'gives', 'element', 'category', 'locations', 'humanoid'].forEach((field, idx) => {
     const display = field === 'humanoid' ? (randomCharacter[field] ? '✓' : 'X') : randomCharacter[field];
     html += `
         <div class="flip-card">
@@ -298,11 +299,25 @@ function showCorrectCharacter() {
         alignHoriz: true,
         alignVert: true,
         multiLine: true,
-        maxFontSize: 12,  
-        minFontSize: 6  
+        maxFontSize: 12,
+        minFontSize: 6
       });
     }, i * 200);
   });
+}
+
+function compareLocations(correctLocs, guessLocs) {
+  const correctSet = new Set(correctLocs);
+  const guessSet   = new Set(guessLocs);
+
+  if (guessSet.size === correctSet.size &&
+      [...guessSet].every(loc => correctSet.has(loc))) {
+    return 'correct';
+  }
+  if ([...guessSet].some(loc => correctSet.has(loc))) {
+    return 'partial';
+  }
+  return 'wrong';
 }
 
 function compareSets(correctLoot, guessLoot) {
@@ -324,16 +339,16 @@ async function fetchMonsters() {
   try {
     const response = await fetch("https://deepwokendle.onrender.com/api/monsters");
     if (!response.ok) throw new Error("Error while trying to fetch monsters");
-
     const monsters = await response.json();
+    console.log(monsters);
     return monsters.map(m => ({
       id: m.id,
       name: m.name,
       picture: m.picture,
-      mainHabitat: m.mainHabitat,
       humanoid: m.humanoid,
       element: m.element,
       category: m.category,
+      locations: m.locations,
       gives: m.gives
     }));
   } catch (error) {
