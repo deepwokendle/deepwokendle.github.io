@@ -104,7 +104,7 @@ namespace DeepwokendleApi.Controllers
                 { 21, new List<int>{ 8 } },  // The Meat Lord
                 { 22, new List<int>{ 2 } },  // Karliah
                 { 23, new List<int>{ 5 } },  // Immortal Guardian
-                { 24, new List<int>{ 12, 7 } },  // Primadon
+                { 24, new List<int>{ 12 } },  // Primadon
                 { 25, new List<int>{ 2, 6 } },  // Kennith
             };
 
