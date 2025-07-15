@@ -360,7 +360,7 @@ function compareSets(correctLoot, guessLoot) {
 
 async function fetchMonsters() {
   try {
-    const response = await fetch("https://localhost:7021/api/Monsters/getMonsters");
+    const response = await fetch("https://deepwokendle.onrender.com/api/Monsters/getMonsters");
     if (!response.ok) throw new Error("Error while trying to fetch monsters");
     const monsters = await response.json();
     return monsters.map(m => ({
@@ -454,7 +454,7 @@ async function toggleModalSuggestMonster(show) {
 
 async function getElementData() {
   try {
-    const response = await fetch("https://localhost:7021/api/Elements/getElements");
+    const response = await fetch("https://deepwokendle.onrender.com/api/Elements/getElements");
     if (!response.ok) throw new Error("Error while trying to fetch elements");
     const elements = await response.json();
     return elements.map(e => ({
@@ -469,7 +469,7 @@ async function getElementData() {
 
 async function getCategoryData() {
   try {
-    const response = await fetch("https://localhost:7021/api/Categories/getCategories");
+    const response = await fetch("https://deepwokendle.onrender.com/api/Categories/getCategories");
     if (!response.ok) throw new Error("Error while trying to fetch categories");
     const categories = await response.json();
     return categories.map(e => ({
@@ -483,7 +483,7 @@ async function getCategoryData() {
 }
 async function getLootData() {
   try {
-    const response = await fetch("https://localhost:7021/api/Loots/getLoots");
+    const response = await fetch("https://deepwokendle.onrender.com/api/Loots/getLoots");
     if (!response.ok) throw new Error("Error while trying to fetch loots");
     const loots = await response.json();
     return loots.map(e => ({
@@ -499,7 +499,7 @@ async function getLootData() {
 
 async function getLocationData() {
   try {
-    const response = await fetch("https://localhost:7021/api/Locations/getLocations");
+    const response = await fetch("https://deepwokendle.onrender.com/api/Locations/getLocations");
     if (!response.ok) throw new Error("Error while trying to fetch locations");
     const locations = await response.json();
     return locations.map(e => ({
@@ -613,7 +613,7 @@ async function signupUser() {
   const password = document.getElementById("passwordInput").value;
 
   try {
-    const response = await fetch("https://localhost:7021/api/Auth/register", {
+    const response = await fetch("https://deepwokendle.onrender.com/api/Auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -658,7 +658,7 @@ async function loginUser() {
   const username = document.getElementById("usernameInput").value;
   const password = document.getElementById("passwordInput").value;
   try {
-    const response = await fetch("https://localhost:7021/api/Auth/login", {
+    const response = await fetch("https://deepwokendle.onrender.com/api/Auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -733,7 +733,7 @@ async function suggestMonster() {
   formData.append("File", file);
 
   try {
-    const response = await fetch("https://localhost:7021/api/Monsters/createMonster", {
+    const response = await fetch("https://deepwokendle.onrender.com/api/Monsters/createMonster", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + localStorage.getItem("token")
