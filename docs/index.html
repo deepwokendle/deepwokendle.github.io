@@ -8,28 +8,65 @@
   <link rel="stylesheet" href="css/styles.css">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="shortcut icon" href="img/deepwoken-logo.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    crossorigin="anonymous" />
   <meta name="description"
     content="Deepwokendle is a guessing game where you try to identify Deepwoken characters based on clues. Test your knowledge!">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7638430998620093"
     crossorigin="anonymous"></script>
+
 </head>
 
 <body>
-  <div id="loading-overlay" style="
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 9999;
-    align-items: center;
-    justify-content: center;
-    ">
+  <div id="loading-overlay" style="display:none;">
     <div class="spinner"></div>
   </div>
-
+  <span class="username"></span>
+  <div class="userLoginControl">
+    <button onclick="toggleModal(true)">
+      <i class="fa-solid fa-user"></i>
+    </button>
+  </div>
+  <div class="modal-overlay" id="loginSignUpModal">
+    <div class="modal border">
+      <p class="title">Login</p>
+      <input id="usernameInput" class="modalInput border" type="text" placeholder="Username" />
+      <div class="passwordWrapper">
+        <input id="passwordInput" class="modalInput border" type="password" placeholder="Password" />
+        <i id="togglePassword" class="fas fa-eye"></i>
+      </div>
+      <div class="modal-buttons">
+        <button class="border" onclick="loginUser()">Login</button>
+        <button class="border" onclick="toggleModal(false)">Close</button>
+      </div>
+      <a onclick="manageSignUpLoginModal()" class="register">
+        Create an account -->
+        <span class="underscoreAnimation"></span>
+      </a>
+    </div>
+  </div>
+  <div class="modal-overlay" id="suggestMonsterModal">
+    <div class="modal border">
+      <p class="title">Suggest An NPC!</p>
+      <div class="suggestContainer">
+        <div class="monsterNameHumanoidContainer">
+          <input id="monsterName" class="modalInput border" type="text" placeholder="Npc Name" />
+          <input id="isHumanoid" class="modalInput border" type="checkbox" title="Humanoid?" />
+        </div>
+        <input id="monsterPicture" class="modalInput border" type="file"
+          accept="image/png, image/jpeg, image/jpg, image/webp" style="background-color:var(--container-background)" />
+        <select id="elementId" class="modalInput border" type="number"></select>
+        <select id="categoryId" class="modalInput border" type="number"></select>
+        <select id="location" multiple></select>
+        <select id="monsterLoot" multiple></select>
+      </div>
+      <div class="modal-buttons">
+        <button class="border" onclick="suggestMonster()">Suggest!</button>
+        <button class="border" onclick="toggleModalSuggestMonster(false)">Close</button>
+      </div>
+    </div>
+  </div>
   <section id="mainGame">
-
     <div id="container" class="border">
       <header class="center">
         <button id="hamburger" aria-label="Abrir menu">
@@ -44,6 +81,7 @@
           <ul id="sidebarOptions">
             <li id="normalMode"><button>Normal Mode</button></li>
             <li id="infiniteMode"><button>Infinite Mode</button></li>
+            <li id="suggestMonsterSideBar"><button>Suggest Npc</button></li>
           </ul>
         </nav>
       </aside>
@@ -101,7 +139,8 @@
       <a class="fab-item" href="https://discord.gg/26VQY9ve8q" title="Discord Community" target="_blank" rel="noopener">
         <img src="img/discord-logo.png" alt="Discord">
       </a>
-      <a class="fab-item" href="https://ko-fi.com/ninpu/tip" title="Buy me a coffee and support Deepwokendle!" target="_blank" rel="noopener">
+      <a class="fab-item" href="https://ko-fi.com/ninpu/tip" title="Buy me a coffee and support Deepwokendle!"
+        target="_blank" rel="noopener">
         <img src="https://storage.ko-fi.com/cdn/cup-border.png" alt="Ko-fi">
       </a>
     </div>

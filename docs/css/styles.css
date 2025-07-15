@@ -26,8 +26,169 @@ h1 {
     color: #18221a;
 }
 
+/* Modal login/signup */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal {
+    background: var(--background);
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    max-width: 300px;
+    width: 100%;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.show .modal {
+    transform: scale(1);
+}
+
+.modalInput {
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border: none;
+    border-radius: 4px;
+}
+
+.passwordWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#passwordInput {
+    padding-right: 2rem;
+}
+
+#togglePassword {
+    position: absolute;
+    right: 0.7rem;
+    cursor: pointer;
+    color: gray;
+    bottom: 25px;
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+#suggestMonsterSideBar{
+    display:none;
+}
+.suggestContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: 15px;
+}
+
+.suggestContainer * {
+    margin:0;
+}
+
+.suggestContainer .select2-search__field{
+    border:none !important;
+}
+
+.monsterNameHumanoidContainer {
+    display: flex;
+    gap: 15px;
+}
+
+#isHumanoid {
+    width: 9%;
+    padding: 5px;
+    transform: scale(1);
+}
+
+.modal button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 200ms ease-in-out;
+}
+
+.modal button:hover {
+    background-color: var(--button-background);
+    color: white;
+    transform: scale(1.1);
+}
+
+.title {
+    color: white;
+    margin: 0 auto;
+    margin-bottom: 10px;
+    width: fit-content;
+}
+
+.register {
+    cursor:pointer;
+    position: relative;
+    width: fit-content;
+    display: flex;
+    text-decoration: none;
+    color: white;
+    transition: transform 0.2s ease;
+    margin: 0 auto;
+    margin-top: 7px;
+}
+
+.register:hover {
+    transform: scale(1.1);
+}
+
+.register::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: 0%;
+    background-color: currentColor;
+    transition: width 0.3s ease;
+}
+
+.register:hover::before {
+    width: 100%;
+}
+
+/* end modal login/signup */
+
 #loading-overlay {
     display: flex;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
 }
 
 .spinner {
@@ -43,6 +204,56 @@ h1 {
     to {
         transform: rotate(360deg);
     }
+}
+.username{
+    position: fixed;
+    right: 3rem;
+    top: 3%;
+    color: white;
+}
+.userLoginControl {
+    height: 20px;
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    right: 1rem;
+    top: 2%;
+    z-index: 1000;
+    transform: scale(2);
+    transition: transform 200ms ease-in-out;
+    margin-top: 10px;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+}
+
+.userLoginControl::before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    background-color: white;
+    z-index: -1;
+    transition: height 200ms ease-in-out;
+}
+
+.userLoginControl:hover::before {
+    height: 100%;
+}
+
+.userLoginControl * {
+    cursor: pointer;
+    color: white;
+    background-color: transparent;
+    z-index: 1;
+    position: relative;
+}
+
+.userLoginControl:hover * {
+    color: #18221a;
 }
 
 .correct {
@@ -364,7 +575,7 @@ input:focus {
     color: #fff;
     display: inline-block;
     transition: transform .3s ease;
-    font-family:Arial, Helvetica, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 .fab-actions {
@@ -396,9 +607,9 @@ input:focus {
     transform: scale(1.1);
 }
 
-.fab-item img{
-    max-width:50px;
-    min-width:30px;
+.fab-item img {
+    max-width: 50px;
+    min-width: 30px;
 }
 
 .fab-container.open .fab-actions {

@@ -1,4 +1,8 @@
 var guessInput = null;
+var elementInput = null;
+var categoryInput = null;
+var monsterLootInput = null;
+var locationInput = null;
 var randomCharacter = null;
 var monstersDataSource = null;
 var select2Data = null;
@@ -9,12 +13,25 @@ var amountsGuessed = 0;
 var mode = 'normal';
 var correctShown = false;
 var infiniteStreak = 0;
+var isLoginMode = true;
 const _nativeRandom = Math.random;
 const fab = document.querySelector('.fab-container');
 const moreInfoBtn = fab.querySelector('.fab-main');
+const hamburger = document.getElementById('hamburger');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+const togglePassword = document.getElementById("togglePassword");
+const passwordInput = document.getElementById("passwordInput");
 
 $(document).ready(function () {
   initNormalMode();
+  var token = localStorage.getItem("token");
+  var savedUsername = localStorage.getItem("username");
+  if (token)
+    $("#suggestMonsterSideBar").css("display", "block");
+
+  if (savedUsername)
+    $(".username").text(savedUsername);
 });
 
 moreInfoBtn.addEventListener('click', () => {
@@ -98,12 +115,13 @@ function guessCharacter() {
   if (correct) $("#guessBtn").off('click');
   let html = `<div class="col-md-12 rowGuessed firstGuess">`;
   $("#firstGuessText").css("display", "none")
+  const src = monster.picture.startsWith('http') ? monster.picture : `./${monster.picture}`;
   html += `
       <div class="flip-card">
         <div class="flip-card-inner">
           <div class="flip-card-front"></div>
           <div class="flip-card-back border">
-            <img class="itemImg" src="./${monster.picture}" alt="">
+            <img class="itemImg" src="${src}" alt="">
           </div>
         </div>
       </div>`;
@@ -117,11 +135,11 @@ function guessCharacter() {
               : monster[field];
 
       let cssClass =
-        field === 'gives' ? compareSets(randomCharacter.gives, monster.gives) : 
-        field === 'locations' ? compareLocations(randomCharacter.locations, monster.locations) : 
-        (monster[field] === randomCharacter[field] ? 'correct' : 'wrong');
+        field === 'gives' ? compareSets(randomCharacter.gives, monster.gives) :
+          field === 'locations' ? compareLocations(randomCharacter.locations, monster.locations) :
+            (monster[field] === randomCharacter[field] ? 'correct' : 'wrong');
 
-        html += `
+      html += `
           <div class="flip-card">
             <div class="flip-card-inner">
               <div class="flip-card-front"></div>
@@ -260,23 +278,24 @@ function showCorrectCharacter() {
   guessInput.val(randomCharacter.id).trigger('change');
   let html = `<div class="col-md-12 rowGuessed firstGuess">`;
   $("#firstGuessText").css("display", "none");
+  const src = randomCharacter.picture.startsWith('http') ? randomCharacter.picture : `./${randomCharacter.picture}`;
   html += `
       <div class="flip-card">
         <div class="flip-card-inner">
           <div class="flip-card-front"></div>
           <div class="flip-card-back border">
-            <img class="itemImg"src="./${randomCharacter.picture}" alt="">
+            <img class="itemImg"src="${src}" alt="">
           </div>
         </div>
       </div>`;
 
   ['name', 'gives', 'element', 'category', 'locations', 'humanoid'].forEach((field, idx) => {
     const display =
-      field === 'gives'      ? randomCharacter.gives.join(', ')
-    : field === 'locations'  ? randomCharacter.locations.join(', ')
-    : field === 'humanoid'   ? (randomCharacter.humanoid ? '✓' : 'X')
-    : randomCharacter[field];
-      html += `
+      field === 'gives' ? randomCharacter.gives.join(', ')
+        : field === 'locations' ? randomCharacter.locations.join(', ')
+          : field === 'humanoid' ? (randomCharacter.humanoid ? '✓' : 'X')
+            : randomCharacter[field];
+    html += `
         <div class="flip-card">
           <div class="flip-card-inner">
             <div class="flip-card-front"></div>
@@ -312,10 +331,10 @@ function showCorrectCharacter() {
 
 function compareLocations(correctLocs, guessLocs) {
   const correctSet = new Set(correctLocs);
-  const guessSet   = new Set(guessLocs);
+  const guessSet = new Set(guessLocs);
 
   if (guessSet.size === correctSet.size &&
-      [...guessSet].every(loc => correctSet.has(loc))) {
+    [...guessSet].every(loc => correctSet.has(loc))) {
     return 'correct';
   }
   if ([...guessSet].some(loc => correctSet.has(loc))) {
@@ -341,7 +360,7 @@ function compareSets(correctLoot, guessLoot) {
 
 async function fetchMonsters() {
   try {
-    const response = await fetch("https://deepwokendle.onrender.com/api/monsters");
+    const response = await fetch("https://localhost:7021/api/Monsters/getMonsters");
     if (!response.ok) throw new Error("Error while trying to fetch monsters");
     const monsters = await response.json();
     return monsters.map(m => ({
@@ -349,10 +368,11 @@ async function fetchMonsters() {
       name: m.name,
       picture: m.picture,
       humanoid: m.humanoid,
-      element: m.element,
-      category: m.category,
-      locations: m.locations,
-      gives: m.gives
+      mainHabitat: m.mainHabitat,
+      element: m.element?.name || "Unknown",
+      category: m.category?.name || "Unknown",
+      gives: m.lootPool?.map(l => l.lootName) || [],
+      locations: m.locationPool?.map(loc => loc.name) || []
     }));
   } catch (error) {
     console.error("Error while trying to fetch monsters:", error);
@@ -388,11 +408,6 @@ function updateResetTimer() {
   $('#resetTimer').text(`Character resetting in ${hours}:${minutes}:${seconds}`);
 }
 
-
-const hamburger = document.getElementById('hamburger');
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('overlay');
-
 function toggleSidebar() {
   sidebar.classList.toggle('open');
   sidebar.classList.toggle('border');
@@ -412,6 +427,368 @@ document.getElementById('infiniteMode').addEventListener('click', () => {
   mode = 'infinite';
   toggleSidebar();
   initInfiniteMode();
+});
+document.getElementById('suggestMonsterSideBar').addEventListener('click', () => {
+  toggleSidebar();
+  toggleModalSuggestMonster(true);
+});
+
+togglePassword.addEventListener("click", () => {
+  const isPassword = passwordInput.type === "password";
+  passwordInput.type = isPassword ? "text" : "password";
+  togglePassword.classList.toggle("fa-eye");
+  togglePassword.classList.toggle("fa-eye-slash");
+});
+
+async function toggleModalSuggestMonster(show) {
+  const modal = document.getElementById('suggestMonsterModal');
+  if (show) {
+    showLoading();
+    await loadComponentsSuggestingMonster();
+    hideLoading();
+    modal.classList.add('show');
+  } else {
+    modal.classList.remove('show');
+  }
+}
+
+async function getElementData() {
+  try {
+    const response = await fetch("https://localhost:7021/api/Elements/getElements");
+    if (!response.ok) throw new Error("Error while trying to fetch elements");
+    const elements = await response.json();
+    return elements.map(e => ({
+      id: e.id,
+      name: e.name,
+    }));
+  } catch (error) {
+    console.error("Error while trying to fetch elements:", error);
+    return [];
+  }
+}
+
+async function getCategoryData() {
+  try {
+    const response = await fetch("https://localhost:7021/api/Categories/getCategories");
+    if (!response.ok) throw new Error("Error while trying to fetch categories");
+    const categories = await response.json();
+    return categories.map(e => ({
+      id: e.id,
+      name: e.name,
+    }));
+  } catch (error) {
+    console.error("Error while trying to fetch categories:", error);
+    return [];
+  }
+}
+async function getLootData() {
+  try {
+    const response = await fetch("https://localhost:7021/api/Loots/getLoots");
+    if (!response.ok) throw new Error("Error while trying to fetch loots");
+    const loots = await response.json();
+    return loots.map(e => ({
+      id: e.id,
+      name: e.name
+    }));
+  } catch (error) {
+    console.error("Error while trying to fetch loots:", error);
+    return [];
+  }
+}
+
+
+async function getLocationData() {
+  try {
+    const response = await fetch("https://localhost:7021/api/Locations/getLocations");
+    if (!response.ok) throw new Error("Error while trying to fetch locations");
+    const locations = await response.json();
+    return locations.map(e => ({
+      id: e.id,
+      name: e.name,
+    }));
+  } catch (error) {
+    console.error("Error while trying to fetch locations:", error);
+    return [];
+  }
+}
+
+async function loadComponentsSuggestingMonster() {
+  if (!elementInput) {
+    var elementData = await getElementData();
+    elementData = elementData
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(m => ({ id: m.id, text: m.name }));
+    elementInput = $('#elementId').select2({
+      placeholder: 'Element',
+      allowClear: true,
+      width: 'resolve',
+      minimumResultsForSearch: 0,
+      data: elementData
+    });
+  }
+
+  if (!categoryInput) {
+    var categoryData = await getCategoryData();
+    categoryData = categoryData
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(m => ({ id: m.id, text: m.name }));
+    categoryInput = $('#categoryId').select2({
+      placeholder: 'Category',
+      allowClear: true,
+      width: 'resolve',
+      minimumResultsForSearch: 0,
+      data: categoryData
+    });
+  }
+
+  if (!locationInput) {
+    var locationData = await getLocationData();
+    locationData = locationData
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(m => ({ id: m.id, text: m.name }));
+    locationInput = $('#location').select2({
+      placeholder: 'Locations',
+      allowClear: true,
+      width: 'resolve',
+      minimumResultsForSearch: 0,
+      multiple: true,
+      data: locationData
+    });
+  }
+
+  if (!monsterLootInput) {
+    var lootData = await getLootData();
+    lootData = lootData
+      .slice()
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(m => ({ id: m.id, text: m.name }));
+    monsterLootInput = $('#monsterLoot').select2({
+      placeholder: 'Loots',
+      allowClear: true,
+      width: 'resolve',
+      minimumResultsForSearch: 0,
+      multiple: true,
+      data: lootData
+    });
+  }
+}
+
+function toggleModal(show) {
+  const modal = document.getElementById('loginSignUpModal');
+  if (show) {
+    modal.classList.add('show');
+  } else {
+    modal.classList.remove('show');
+  }
+}
+
+function manageSignUpLoginModal() {
+  isLoginMode = !isLoginMode;
+  const modal = document.getElementById('loginSignUpModal');
+  const title = modal.querySelector('.title');
+  const actionButton = modal.querySelector('.modal-buttons button:first-child');
+  const switchButton = modal.querySelector('.register');
+
+  if (isLoginMode) {
+    title.textContent = 'Login';
+    actionButton.textContent = 'Login';
+    actionButton.setAttribute('onclick', 'loginUser()');
+    switchButton.innerHTML = 'Create an account --> <span class="underscoreAnimation"></span>';
+  } else {
+    title.textContent = 'Sign Up';
+    actionButton.textContent = 'Sign Up';
+    actionButton.setAttribute('onclick', 'signupUser()');
+    switchButton.innerHTML = 'Already have an account? --> <span class="underscoreAnimation"></span>';
+  }
+
+  modal.classList.add('show');
+}
+
+async function signupUser() {
+  showLoading();
+  const username = document.getElementById("usernameInput").value;
+  const password = document.getElementById("passwordInput").value;
+
+  try {
+    const response = await fetch("https://localhost:7021/api/Auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        Username: username,
+        Password: password
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || "Registration failed.");
+    }
+
+    hideLoading();
+    Swal.fire({
+      icon: 'success',
+      title: 'Registration successful!',
+      text: 'You can now log in with your credentials.',
+      confirmButtonText: 'Great!',
+      showCloseButton: true
+    });
+
+    manageSignUpLoginModal();
+  } catch (error) {
+    hideLoading();
+    Swal.fire({
+      icon: 'error',
+      title: 'Registration Failed',
+      text: error.message,
+      confirmButtonText: 'Okay',
+      showCloseButton: true
+    });
+    return null;
+  }
+}
+
+
+async function loginUser() {
+  showLoading();
+  const username = document.getElementById("usernameInput").value;
+  const password = document.getElementById("passwordInput").value;
+  try {
+    const response = await fetch("https://localhost:7021/api/Auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        Username: username,
+        Password: password
+      })
+    });
+
+    if (!response.ok) throw new Error("Invalid username or password.");
+
+    const result = await response.json();
+    hideLoading();
+    Swal.fire({
+      icon: 'success',
+      title: 'Login successful!',
+      confirmButtonText: 'Nice!',
+      showCloseButton: true
+    });
+    localStorage.setItem("token", result.token);
+    localStorage.setItem("username", result.user.username ?? "");
+    $(".username").text(result.user.username ?? username);
+    $("#suggestMonsterSideBar").css("display", "block");
+    return result;
+  } catch (error) {
+    hideLoading();
+    Swal.fire({
+      title: 'Error!',
+      showDenyButton: true,
+      text: 'Invalid Credentials.',
+      icon: 'error',
+      confirmButtonText: 'Okay!',
+      denyButtonText: `Cancel`,
+      showCloseButton: true
+    });
+    return null;
+  }
+}
+async function suggestMonster() {
+  showLoading();
+  const formData = new FormData();
+
+  formData.append("Name", $("#monsterName").val());
+  formData.append("Humanoid", $("#isHumanoid").prop("checked"));
+  formData.append("ElementId", elementInput.val());
+  formData.append("CategoryId", categoryInput.val());
+
+  const selectedLocations = locationInput.val() || [];
+  selectedLocations.forEach(loc => {
+    formData.append("LocationsId", loc);
+  });
+
+  const selectedLoots = monsterLootInput.val() || [];
+  selectedLoots.forEach(loot => {
+    formData.append("LootsId", loot);
+  });
+
+  const fileInput = document.getElementById("monsterPicture");
+  const file = fileInput.files[0];
+  if (!file) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Please select a valid image.',
+      showConfirmButton: true
+    });
+    hideLoading();
+    return;
+  }
+
+  formData.append("File", file);
+
+  try {
+    const response = await fetch("https://localhost:7021/api/Monsters/createMonster", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + localStorage.getItem("token")
+      },
+      body: formData
+    });
+
+    if (!response.ok) throw new Error(response);
+
+    const result = await response.json();
+    hideLoading();
+
+    Swal.fire({
+      title: 'Success',
+      text: 'Suggestion confirmed succesfully.',
+      icon: 'success',
+      confirmButtonText: 'Nice!',
+      didOpen: () => {
+        const confirmBtn = Swal.getConfirmButton();
+        confirmBtn.disabled = true;
+        setTimeout(() => {
+          confirmBtn.disabled = false;
+        }, 1500);
+      }
+    });
+
+    $("#monsterName").val("");
+    $("#isHumanoid").prop("checked", false);
+    elementInput.val(null).trigger("change");
+    categoryInput.val(null).trigger("change");
+    locationInput.val(null).trigger("change");
+    monsterLootInput.val(null).trigger("change");
+    fileInput.value = ""; 
+
+    $("#suggestMonsterSideBar").css("display", "block");
+    return result;
+
+  } catch (error) {
+    hideLoading();
+    Swal.fire({
+      icon: 'error',
+      title: 'Monster suggestion failed.',
+      text: "Check if you correctly filled the fields.",
+      showConfirmButton: true
+    });
+    return null;
+  }
+}
+
+
+window.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    toggleModal(false);
+    toggleModalSuggestMonster(false);
+  }
 });
 
 setInterval(updateResetTimer, 1000);
