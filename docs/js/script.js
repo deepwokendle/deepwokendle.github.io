@@ -14,6 +14,7 @@ var mode = 'normal';
 var correctShown = false;
 var infiniteStreak = 0;
 var isLoginMode = true;
+var debounce = false;
 const _nativeRandom = Math.random;
 const fab = document.querySelector('.fab-container');
 const moreInfoBtn = fab.querySelector('.fab-main');
@@ -698,7 +699,11 @@ async function loginUser() {
     return null;
   }
 }
+
 async function suggestMonster() {
+  if(debounce)
+    return;
+  debounce = true;
   showLoading();
   const formData = new FormData();
 
@@ -727,6 +732,7 @@ async function suggestMonster() {
       showConfirmButton: true
     });
     hideLoading();
+    debounce = false;
     return;
   }
 
@@ -740,9 +746,22 @@ async function suggestMonster() {
       },
       body: formData
     });
+    if (response.status === 401) {
+      hideLoading();
+      debounce = false;
+      Swal.fire({
+        icon: 'warning',
+        title: 'Login required',
+        text: 'Login before suggesting a monster!',
+        confirmButtonText: 'Ok'
+      });
+      return null;
+    }
 
-    if (!response.ok) throw new Error(response);
-
+    if (!response.ok) {
+      hideLoading();
+      throw new Error(response);
+    }
     const result = await response.json();
     hideLoading();
 
@@ -769,10 +788,12 @@ async function suggestMonster() {
     fileInput.value = ""; 
 
     $("#suggestMonsterSideBar").css("display", "block");
+    debounce = false;
     return result;
 
   } catch (error) {
     hideLoading();
+    debounce = false;
     Swal.fire({
       icon: 'error',
       title: 'Monster suggestion failed.',
