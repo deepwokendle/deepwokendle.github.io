@@ -118,7 +118,7 @@ function guessCharacter() {
   $("#firstGuessText").css("display", "none")
   const src = monster.picture.startsWith('http') ? monster.picture : `./${monster.picture}`;
   html += `
-      <div class="flip-card">
+      <div class="flip-card try${amountsGuessed}">
         <div class="flip-card-inner">
           <div class="flip-card-front"></div>
           <div class="flip-card-back border">
@@ -141,7 +141,7 @@ function guessCharacter() {
             (monster[field] === randomCharacter[field] ? 'correct' : 'wrong');
 
       html += `
-          <div class="flip-card">
+          <div class="flip-card try${amountsGuessed}">
             <div class="flip-card-inner">
               <div class="flip-card-front"></div>
               <div class="flip-card-back item border ${cssClass}">
@@ -158,7 +158,7 @@ function guessCharacter() {
   container.querySelector('.headerContainer')
     .insertAdjacentHTML('afterend', html);
 
-  const cards = document.querySelectorAll('.flip-card');
+  const cards = document.querySelectorAll(`.flip-card.try${amountsGuessed}`);
   if (!correct && amountsGuessed >= 5 && mode == 'infinite') {
     let tempStreak = infiniteStreak;
     infiniteStreak = 0;
