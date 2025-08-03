@@ -62,7 +62,7 @@ public class MonsterService : IMonsterService
     public async Task<IEnumerable<Monster>> GetAllMonstersAsync()
     {
         using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        const string sql = "SELECT id, name, picture, mainhabitat AS MainHabitat, humanoid, elementid AS ElementId, categoryid AS CategoryId FROM monster WHERE pending is false;";
+        const string sql = "SELECT id, name, picture, mainhabitat AS MainHabitat, humanoid, elementid AS ElementId, categoryid AS CategoryId FROM monster";
         return await conn.QueryAsync<Monster>(sql);
     }
 
@@ -75,6 +75,44 @@ public class MonsterService : IMonsterService
             WHERE id = @Id;
         ";
         return await conn.QueryFirstOrDefaultAsync<Monster>(sql, new { Id = id });
+    }
+
+    public async Task<int?> GetDailyMonsterAsync()
+    {
+        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
+        var today = DateTime.UtcNow.Date;
+        const string selectSql = "SELECT monster_id FROM daily_monster WHERE created_at = @Today;";
+        int? monsterId = await conn.QueryFirstOrDefaultAsync<int?>(selectSql, new { Today = today });
+
+        if (monsterId == null)
+        {
+            const string randomSql = "SELECT id FROM monster ORDER BY RANDOM() LIMIT 1;";
+            monsterId = await conn.QueryFirstAsync<int>(randomSql);
+            const string insertSql = "INSERT INTO daily_monster (created_at, monster_id) VALUES (@Today, @MonsterId);";
+            await conn.ExecuteAsync(insertSql, new { Today = today, MonsterId = monsterId });
+        }
+
+        return monsterId;
+    }
+
+    public async Task<int?> GetInfiniteMonsterAsync(string username)
+    {
+        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+        await conn.OpenAsync();
+        var today = DateTime.UtcNow.Date;
+        const string selectSql = "SELECT monster_id FROM generated_monster WHERE user_at_creation = @Username and completed = false;";
+        int? monsterId = await conn.QueryFirstOrDefaultAsync<int?>(selectSql, new { Username = username});
+
+        if (monsterId == null)
+        {
+            const string randomSql = "SELECT id FROM monster ORDER BY RANDOM() LIMIT 1;";
+            monsterId = await conn.QueryFirstAsync<int>(randomSql);
+            const string insertSql = "INSERT INTO generated_monster (user_at_creation, monster_id, completed) VALUES (@Username, @MonsterId, false);";
+            await conn.ExecuteAsync(insertSql, new { Username = username, MonsterId = monsterId });
+        }
+
+        return monsterId;
     }
 
     public async Task UpdateMonsterAsync(int id, MonsterCommand monsterCommand)

@@ -15,6 +15,9 @@ var correctShown = false;
 var infiniteStreak = 0;
 var isLoginMode = true;
 var debounce = false;
+var debounceCharacter = false;
+var pendingLoginResolver = null;
+var pendingLoginRejector = null;
 const _nativeRandom = Math.random;
 const fab = document.querySelector('.fab-container');
 const moreInfoBtn = fab.querySelector('.fab-main');
@@ -62,36 +65,33 @@ async function initNormalMode() {
   $("#firstGuessText").show();
   $('.columns').css('margin-top', '0px');
   await loadSelect2Data();
-  hideLoading();
   const todayKey = new Date().toISOString().split('T')[0];
   cacheKey = `deepwokendle_${todayKey}`;
   dailyCountKey = `${cacheKey}_amountsGuessed`;
   const saved = localStorage.getItem(dailyCountKey);
   amountsGuessed = saved != null ? parseInt(saved, 10) : 0;
   if (amountsGuessed) $('#amountsGuessed').text(`Tries: ${amountsGuessed}/∞`);
-  Math.seedrandom(todayKey);
-  let idx = Math.floor(Math.random() * monstersDataSource.length);
-  randomCharacter = monstersDataSource[idx];
+  randomCharacter = await fetchRandomMonster();
+  randomCharacter = monstersDataSource.find(monster => monster.id === randomCharacter);
+  hideLoading();
   checkIfAlreadyWon();
 }
 
 async function initInfiniteMode() {
+  showLoading();
   correctShown = false;
   guessInput.val(select2Data[0].id).trigger('change');
   mode = 'infinite';
   $('#resetTimer').hide();
-  await loadSelect2Data();
-  infiniteStreak = parseInt(localStorage.getItem('infiniteKillstreak')) || 0;
-  updateStreakUI();
-
-  amountsGuessed = 0;
-  $('#amountsGuessed').text(`Tries: 0/5`);
   $('#attempts .rowGuessed').remove();
   $('.columns').css('margin-top', '22px');
   $("#firstGuessText").show();
-  Math.random = _nativeRandom;
-  let idx = Math.floor(Math.random() * monstersDataSource.length);
-  randomCharacter = monstersDataSource[idx];
+  await loadSelect2Data();
+  amountsGuessed = await fetchStreakAmount();
+  $('#amountsGuessed').text(`Tries: ${amountsGuessed}/5`);
+  updateStreakUI();
+  var randomCharacterId = await fetchRandomInfiniteMonster();
+  randomCharacter = monstersDataSource.find(monster => monster.id === randomCharacterId);
   guessInput.prop('disabled', false);
   $(".btn").prop("disabled", false).removeClass("disabled");
   $("#guessBtn").off('click').on('click', guessCharacter);
@@ -102,15 +102,38 @@ function updateStreakUI() {
   $('#streakDisplay').show();
 }
 
-function guessCharacter() {
+async function guessCharacter() {
+  if (debounceCharacter)
+    return;
+  debounceCharacter = true;
+  const guessedId = guessInput.val();
   if (mode === 'normal') {
     amountsGuessed++;
     localStorage.setItem(dailyCountKey, amountsGuessed);
   } else {
     amountsGuessed++;
+    const attemptData = {
+      MonsterId: parseInt(guessedId, 10),
+      User: localStorage.getItem("username"),
+      GuessDate: new Date().toISOString().slice(0, 10),
+      Infinite: true
+    };
+    const response = await fetch(getApiUrl() + "/Attempts/insert-attempt", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + localStorage.getItem("token"),
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(attemptData)
+    });
+    debounceCharacter = false;
+    if (!response.ok) {
+      throw new Error(`Error at registering attempt`);
+    }
+    const returnedMonsterIdText = await response.text();
+    const returnedMonsterId = parseInt(returnedMonsterIdText, 10);
   }
   $('#amountsGuessed').text(`Tries: ${amountsGuessed}/${mode == 'infinite' ? '5' : '∞'}`);
-  const guessedId = guessInput.val();
   const monster = monstersDataSource.find(m => m.id == guessedId);
   const correct = monster.id == randomCharacter.id;
   if (correct) $("#guessBtn").off('click');
@@ -250,6 +273,69 @@ function guessCharacter() {
   }, 1500);
 }
 
+function showCharacter(id) {
+  const monster = monstersDataSource.find(m => m.id == id);
+  const correct = monster.id == randomCharacter.id;
+  if (correct) $("#guessBtn").off('click');
+  let html = `<div class="col-md-12 rowGuessed firstGuess">`;
+  $("#firstGuessText").css("display", "none")
+  const src = monster.picture.startsWith('http') ? monster.picture : `./${monster.picture}`;
+  html += `
+      <div class="flip-card try${amountsGuessed}">
+        <div class="flip-card-inner">
+          <div class="flip-card-front"></div>
+          <div class="flip-card-back border">
+            <img class="itemImg" src="${src}" alt="">
+          </div>
+        </div>
+      </div>`;
+
+  ['name', 'gives', 'element', 'category', 'locations', 'humanoid']
+    .forEach(field => {
+      let display =
+        field === 'gives' ? monster.gives.join(', ')
+          : field === 'locations' ? monster.locations.join(', ')
+            : field === 'humanoid' ? (monster.humanoid ? '✓' : 'X')
+              : monster[field];
+
+      let cssClass =
+        field === 'gives' ? compareSets(randomCharacter.gives, monster.gives) :
+          field === 'locations' ? compareLocations(randomCharacter.locations, monster.locations) :
+            (monster[field] === randomCharacter[field] ? 'correct' : 'wrong');
+
+      html += `
+          <div class="flip-card try${amountsGuessed}">
+            <div class="flip-card-inner">
+              <div class="flip-card-front"></div>
+              <div class="flip-card-back item border ${cssClass}">
+                ${display}
+              </div>
+            </div>
+          </div>`;
+    });
+  $("#firstGuessText").hide();
+  html += `</div>`;
+
+  const container = document.getElementById('attempts');
+  container.querySelector('.firstGuess')?.classList.remove('firstGuess');
+  container.querySelector('.headerContainer')
+    .insertAdjacentHTML('afterend', html);
+
+  const cards = document.querySelectorAll(`.flip-card.try${amountsGuessed}`);
+  cards.forEach((card, i) => {
+    setTimeout(() => {
+      card.classList.add('flipped');
+      textFit(document.querySelectorAll('.item'), {
+        alignHoriz: true,
+        alignVert: true,
+        multiLine: true,
+        maxFontSize: 12,
+        minFontSize: 6
+      });
+    }, i * 300);
+  })
+}
+
 function disableButtons() {
   guessInput.prop('disabled', true);
   $(".btn").prop("disabled", true);
@@ -358,10 +444,59 @@ function compareSets(correctLoot, guessLoot) {
   return 'wrong';
 }
 
+async function fetchRandomMonster() {
+  try {
+    const response = await fetch(getApiUrl() + "/Monsters/daily-monster");
+    if (!response.ok) throw new Error("Error while trying to fetch random monster");
+    const monster = await response.json();
+    return monster;
+  } catch (error) {
+    console.error("Error while trying to fetch random monster:", error);
+    return [];
+  }
+}
+
+async function fetchStreakAmount() {
+  try {
+    let username = localStorage.getItem("username");
+    let token = localStorage.getItem("token");
+    const response = await fetch(getApiUrl() + "/Attempts/get-streak?username=" + (token ? username : null));
+    if (!response.ok) throw new Error("Error while trying to fetch infinite random monster");
+    const result = await response.json();
+    infiniteStreak = result.streakAmmount ?? 0;
+    let delay = 0;
+    for (const id of result.npcsGuessedIds) {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      showCharacter(id);
+      delay += 250;
+      hideLoading();
+    }
+    hideLoading();
+    return result.attemptsAmount ?? 0;
+  } catch (error) {
+    hideLoading();
+    console.error("Error while trying to fetch infinite random monster:", error);
+    return [];
+  }
+}
+
+async function fetchRandomInfiniteMonster() {
+  try {
+    let username = localStorage.getItem("username");
+    let token = localStorage.getItem("token");
+    const response = await fetch(getApiUrl() + "/Monsters/infinite-monster?username=" + (token ? username : null));
+    if (!response.ok) throw new Error("Error while trying to fetch infinite random monster");
+    const monsterId = await response.json();
+    return monsterId;
+  } catch (error) {
+    console.error("Error while trying to fetch infinite random monster:", error);
+    return [];
+  }
+}
 
 async function fetchMonsters() {
   try {
-    const response = await fetch("https://deepwokendle.onrender.com/api/Monsters/getMonsters");
+    const response = await fetch(getApiUrl() + "/Monsters/getMonsters");
     if (!response.ok) throw new Error("Error while trying to fetch monsters");
     const monsters = await response.json();
     return monsters.map(m => ({
@@ -434,6 +569,11 @@ document.getElementById('suggestMonsterSideBar').addEventListener('click', () =>
   toggleModalSuggestMonster(true);
 });
 
+document.getElementById('leaderboardSideBar').addEventListener('click', () => {
+  toggleSidebar();
+  toggleModalLeaderboard(true);
+});
+
 togglePassword.addEventListener("click", () => {
   const isPassword = passwordInput.type === "password";
   passwordInput.type = isPassword ? "text" : "password";
@@ -453,9 +593,67 @@ async function toggleModalSuggestMonster(show) {
   }
 }
 
+async function toggleModalLeaderboard(show = true) {
+  const modal = document.getElementById('leaderboardModal');
+  if (show) {
+    await initLeaderboard();
+    modal.classList.add('show');
+  } else {
+    modal.classList.remove('show');
+  }
+}
+
+async function fetchLeaderboardData() {
+  try {
+    const res = await fetch(getApiUrl() + "/Leaderboard/get-leaderboard");
+    if (!res.ok) throw new Error('Error at fetching leaderboard data');
+    var result = await res.json();
+    return result;
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}
+
+async function initLeaderboard() {
+  try {
+    const data = await fetchLeaderboardData();
+    const gridData = data.map(item => [item.place, item.username, item.maxStreak]);
+
+    if (window.leaderboardGridInstance) {
+      window.leaderboardGridInstance.updateConfig({ gridData }).forceRender();
+    } else {
+      window.leaderboardGridInstance = new gridjs.Grid({
+        columns: [
+          { id: 'place', name: 'Position' },
+          {
+            id: 'user', name: 'User', attributes: (cell, row) => ({
+              class: 'user-cell gridjs-th gridjs-th-sort'
+            })
+          },
+          { id: 'maxStreak', name: 'Max Streak' },
+        ],
+        data: gridData,
+        pagination: { enabled: true, limit: 10 },
+        sort: true,
+        search: true,
+        resizable: true,
+        style: {
+          table: { 'border-collapse': 'collapse' },
+          td: { 'text-align': 'center', 'background': 'var(--button-background)', 'color': 'white' },
+          th: { 'background-color': 'white', 'color': 'var(--text-color)' }
+        }
+      }).render(document.getElementById('leaderboardGrid'));
+      $(".gridjs-search").addClass('border');
+    }
+  }
+  catch (err) {
+    console.log(err);
+  }
+}
 async function getElementData() {
   try {
-    const response = await fetch("https://deepwokendle.onrender.com/api/Elements/getElements");
+    const response = await fetch(getApiUrl() + "/Elements/getElements");
     if (!response.ok) throw new Error("Error while trying to fetch elements");
     const elements = await response.json();
     return elements.map(e => ({
@@ -470,7 +668,7 @@ async function getElementData() {
 
 async function getCategoryData() {
   try {
-    const response = await fetch("https://deepwokendle.onrender.com/api/Categories/getCategories");
+    const response = await fetch(getApiUrl() + "/Categories/getCategories");
     if (!response.ok) throw new Error("Error while trying to fetch categories");
     const categories = await response.json();
     return categories.map(e => ({
@@ -484,7 +682,7 @@ async function getCategoryData() {
 }
 async function getLootData() {
   try {
-    const response = await fetch("https://deepwokendle.onrender.com/api/Loots/getLoots");
+    const response = await fetch(getApiUrl() + "/Loots/getLoots");
     if (!response.ok) throw new Error("Error while trying to fetch loots");
     const loots = await response.json();
     return loots.map(e => ({
@@ -500,7 +698,7 @@ async function getLootData() {
 
 async function getLocationData() {
   try {
-    const response = await fetch("https://deepwokendle.onrender.com/api/Locations/getLocations");
+    const response = await fetch(getApiUrl() + "/Locations/getLocations");
     if (!response.ok) throw new Error("Error while trying to fetch locations");
     const locations = await response.json();
     return locations.map(e => ({
@@ -577,13 +775,31 @@ async function loadComponentsSuggestingMonster() {
   }
 }
 
-function toggleModal(show) {
+function toggleModal(show, isLoggingByClick) {
+  if (isLoggingByClick)
+    loggingIn = true;
+  else
+    loggingIn = false;
   const modal = document.getElementById('loginSignUpModal');
   if (show) {
     modal.classList.add('show');
   } else {
     modal.classList.remove('show');
   }
+  let token = localStorage.getItem('token');
+  if (token) {
+    $(".loggedOutContainer").hide();
+    $(".loggedInContainer").show();
+  } else {
+    $(".loggedOutContainer").show();
+    $(".loggedInContainer").hide();
+  }
+}
+
+function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("username");
+  window.location.reload();
 }
 
 function manageSignUpLoginModal() {
@@ -614,7 +830,7 @@ async function signupUser() {
   const password = document.getElementById("passwordInput").value;
 
   try {
-    const response = await fetch("https://deepwokendle.onrender.com/api/Auth/register", {
+    const response = await fetch(getApiUrl() + "/Auth/register", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -653,38 +869,54 @@ async function signupUser() {
   }
 }
 
+function waitForLogin() {
+  return new Promise((resolve, reject) => {
+    pendingLoginResolver = resolve;
+    pendingLoginRejector = reject;
+    toggleModal(true, true);
+  });
+}
 
 async function loginUser() {
-  showLoading();
   const username = document.getElementById("usernameInput").value;
   const password = document.getElementById("passwordInput").value;
+  if (!username || !password)
+    return;
   try {
-    const response = await fetch("https://deepwokendle.onrender.com/api/Auth/login", {
+    showLoading();
+    const response = await fetch(getApiUrl() + "/Auth/login", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        Username: username,
-        Password: password
-      })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ Username: username, Password: password })
     });
 
     if (!response.ok) throw new Error("Invalid username or password.");
 
     const result = await response.json();
     hideLoading();
+
     Swal.fire({
       icon: 'success',
       title: 'Login successful!',
       confirmButtonText: 'Nice!',
       showCloseButton: true
     });
+
     localStorage.setItem("token", result.token);
     localStorage.setItem("username", result.user.username ?? "");
     $(".username").text(result.user.username ?? username);
     $("#suggestMonsterSideBar").css("display", "block");
+
+    toggleModal(false);
+
+    if (pendingLoginResolver) {
+      pendingLoginResolver(result);
+      pendingLoginResolver = null;
+      pendingLoginRejector = null;
+    }
+
     return result;
+
   } catch (error) {
     hideLoading();
     Swal.fire({
@@ -696,12 +928,19 @@ async function loginUser() {
       denyButtonText: `Cancel`,
       showCloseButton: true
     });
+
+    if (pendingLoginRejector) {
+      pendingLoginRejector(error);
+      pendingLoginResolver = null;
+      pendingLoginRejector = null;
+    }
+
     return null;
   }
 }
 
 async function suggestMonster() {
-  if(debounce)
+  if (debounce)
     return;
   debounce = true;
   showLoading();
@@ -739,7 +978,7 @@ async function suggestMonster() {
   formData.append("File", file);
 
   try {
-    const response = await fetch("https://deepwokendle.onrender.com/api/Monsters/createMonster", {
+    const response = await fetch(getApiUrl() + "/Monsters/createMonster", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + localStorage.getItem("token")
@@ -785,7 +1024,7 @@ async function suggestMonster() {
     categoryInput.val(null).trigger("change");
     locationInput.val(null).trigger("change");
     monsterLootInput.val(null).trigger("change");
-    fileInput.value = ""; 
+    fileInput.value = "";
 
     $("#suggestMonsterSideBar").css("display", "block");
     debounce = false;

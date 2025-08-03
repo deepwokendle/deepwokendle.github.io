@@ -18,15 +18,17 @@
 
 html,
 body {
-    background: radial-gradient(#18221a, #04100d);
-    height: 100vh;
-    width:100%;
+    height: 100%;
+    width: 100%;
     flex: 1 1;
 }
 
-body{
-    display:flex;
+body {
+    background: radial-gradient(circle at center, #18221a, #04100d) no-repeat center center fixed;
+    background-size: cover;
+    display: flex;
 }
+
 h1 {
     color: #18221a;
 }
@@ -36,8 +38,8 @@ h1 {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     background-color: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
@@ -58,14 +60,45 @@ h1 {
     padding: 1rem 2rem;
     border-radius: 8px;
     max-width: 300px;
-    width: 100%;
+    min-height: 260px;
+    width: 90%;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
     transform: scale(0.95);
     transition: transform 0.3s ease;
 }
 
+#loginSignUpModal .modal {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.closeButton {
+    color: red;
+    position: absolute;
+    right: 0%;
+    top: 5%;
+    font-weight: bolder;
+    background-color: transparent !important;
+    padding: 0 10px;
+    transform: scale(1.2);
+}
+
 .modal-overlay.show .modal {
     transform: scale(1);
+}
+
+.loggedInContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    display: none;
+    height: 100%;
+}
+
+.loggedInContainer * {
+    color: white;
 }
 
 .modalInput {
@@ -138,7 +171,8 @@ h1 {
     transition: 200ms ease-in-out;
 }
 
-.modal button:hover {
+.modal>button:hover,
+.modal-buttons button:hover {
     background-color: var(--button-background);
     color: white;
     transform: scale(1.1);
@@ -212,7 +246,7 @@ h1 {
     }
 }
 
-.username {
+.username.main {
     position: fixed;
     right: 3rem;
     top: 3%;
@@ -297,6 +331,7 @@ h1 {
     align-items: center;
 }
 
+.gridjs-footer button,
 .border,
 .select2,
 .select2-dropdown,
@@ -304,6 +339,7 @@ h1 {
     border-image: url('../img/border.png') 45% !important;
     border-image-width: 15px !important;
     border-image-outset: 2px !important;
+    outline: none;
 }
 
 .select2-dropdown {
@@ -321,7 +357,7 @@ h1 {
     max-width: 700px;
     padding: 20px;
     padding-bottom: 0px;
-    max-height: 400px;
+    max-height: 600px;
     background-color: var(--container-background);
     display: flex;
     align-items: center;
@@ -345,7 +381,7 @@ input:focus {
     grid-auto-rows: auto;
     width: 100%;
     margin-bottom: 15px;
-    max-height: 145px;
+    max-height: 350px;
     overflow-y: auto;
     position: relative;
     scrollbar-width: thin;
@@ -403,17 +439,6 @@ input:focus {
     color: black;
 }
 
-@media (max-width: 480px) {
-
-    .columns,
-    .rowGuessed {
-        grid-template-columns: repeat(7, minmax(50px, 1fr));
-    }
-
-    .column-title {
-        font-size: 0.6rem;
-    }
-}
 
 .column {
     display: flex;
@@ -579,17 +604,6 @@ input:focus {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-@media (hover: hover) and (pointer: fine) {
-    .fab-main:hover {
-        transform: scale(1.1);
-        background: var(--container-background);
-    }
-
-    .fab-main:hover span {
-        color: black;
-    }
-}
-
 .fab-icon {
     font-size: 32px;
     color: #fff;
@@ -640,6 +654,29 @@ input:focus {
 
 .fab-container.open .fab-icon {
     transform: rotate(90deg);
+}
+
+@media (max-width: 480px) {
+
+    .columns,
+    .rowGuessed {
+        grid-template-columns: repeat(7, minmax(50px, 1fr));
+    }
+
+    .column-title {
+        font-size: 0.6rem;
+    }
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .fab-main:hover {
+        transform: scale(1.1);
+        background: var(--container-background);
+    }
+
+    .fab-main:hover span {
+        color: black;
+    }
 }
 
 /* Sidebar */
@@ -720,14 +757,64 @@ input:focus {
     visibility: visible;
 }
 
+/* Modal Leaderboard */
+#leaderboardModal .modal {
+    max-width: 700px !important;
+}
+
+.gridjs-footer button {
+    margin-right: 10px !important;
+    cursor: pointer !important;
+}
+
+button:is(:disabled) {
+    cursor: default !important;
+    ;
+}
+
+.gridjs-footer button:not(:disabled):hover {
+    color: white !important;
+    background-color: var(--button-background) !important;
+}
+
+.leaderboard .modal-content input:focus,
+.leaderboard .modal-content button:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.gridjs-th-content {
+    text-align: center;
+}
+
+.user-cell:not(th) {
+    max-width: 200px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    padding: 5px;
+}
+
+#leaderboardGrid th {
+    vertical-align: middle;
+}
+
+.leaderboard .title {
+    font-weight: bolder;
+    font-size: 22px;
+}
+
+/* Modal Leaderboard */
+
 @media (max-width: 842px) {
-  .ad-side {
-    display: none;
-  }
-  .ad-layout {
-    justify-content: center;
-  }
-  #mainGame {
-    flex: 1 1 100%;
-  }
+    .ad-side {
+        display: none;
+    }
+
+    .ad-layout {
+        justify-content: center;
+    }
+
+    #mainGame {
+        flex: 1 1 100%;
+    }
 }

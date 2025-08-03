@@ -55,9 +55,11 @@ public class Program
         builder.Services.AddScoped<ILootCategoryService, LootCategoryService>();
         #endregion [LootCategory]
         #endregion [Loot]
+
         #region [Bucket]
         builder.Services.AddHttpClient<ISupabaseStorageService, SupabaseStorageService>();
         #endregion [Bucket]
+
         #region [Location]
         builder.Services.AddScoped<ILocationService, LocationService>();
         #endregion [Location]
@@ -73,9 +75,19 @@ public class Program
         #region [Monster]
         builder.Services.AddScoped<IMonsterService, MonsterService>();
         #endregion [Monster]
+
+        #region [Attempt]
+        builder.Services.AddScoped<IAttemptService, AttemptService>();
+        #endregion [Attempt]
+
+        #region [User]
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<ITokenService, TokenService>();
+        #endregion [User]
 
+        #region [Leaderboard]
+        builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
+        #endregion [Leaderboard]
         builder.Services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -86,11 +98,13 @@ public class Program
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
+                    RequireExpirationTime = true,
                     ValidIssuer = builder.Configuration["Jwt:Issuer"],
                     ValidAudience = builder.Configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
-                    )
+                    ),
+                    ClockSkew = TimeSpan.Zero
                 };
             });
 

@@ -10,6 +10,7 @@
   <link rel="shortcut icon" href="img/deepwoken-logo.ico" type="image/x-icon">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     crossorigin="anonymous" />
+  <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
   <meta name="description"
     content="Deepwokendle is a guessing game where you try to identify Deepwoken characters based on clues. Test your knowledge!">
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7638430998620093"
@@ -18,31 +19,42 @@
 </head>
 
 <body>
-  <div id="loading-overlay" style="display:none;">
+  <div id="loading-overlay" style="display:flex;">
     <div class="spinner"></div>
   </div>
-  <span class="username"></span>
+  <span class="username main"></span>
   <div class="userLoginControl">
-    <button onclick="toggleModal(true)">
+    <button onclick="toggleModal(true, true)">
       <i class="fa-solid fa-user"></i>
     </button>
   </div>
   <div class="modal-overlay" id="loginSignUpModal">
     <div class="modal border">
-      <p class="title">Login</p>
-      <input id="usernameInput" class="modalInput border" type="text" placeholder="Username" />
-      <div class="passwordWrapper">
-        <input id="passwordInput" class="modalInput border" type="password" placeholder="Password" />
-        <i id="togglePassword" class="fas fa-eye"></i>
+      <button class="closeButton" onclick="toggleModal(false)">X</button>
+      <div class="loggedOutContainer">
+        <p class="title">Login</p>
+        <input id="usernameInput" class="modalInput border" type="text" placeholder="Username" />
+        <div class="passwordWrapper">
+          <input id="passwordInput" class="modalInput border" type="password" placeholder="Password" />
+          <i id="togglePassword" class="fas fa-eye"></i>
+        </div>
+        <div class="modal-buttons">
+          <button class="border" onclick="loginUser()">Login</button>
+          <button class="border" onclick="toggleModal(false)">Close</button>
+        </div>
+        <a onclick="manageSignUpLoginModal()" class="register">
+          Create an account -->
+          <span class="underscoreAnimation"></span>
+        </a>
       </div>
-      <div class="modal-buttons">
-        <button class="border" onclick="loginUser()">Login</button>
-        <button class="border" onclick="toggleModal(false)">Close</button>
+      <div class="loggedInContainer">
+        <i class="fa-solid fa-user"></i>
+        <span class="username"></span>
+        <a onclick="logout()" class="register">
+          Logout -->
+          <span class="underscoreAnimation"></span>
+        </a>
       </div>
-      <a onclick="manageSignUpLoginModal()" class="register">
-        Create an account -->
-        <span class="underscoreAnimation"></span>
-      </a>
     </div>
   </div>
   <div class="modal-overlay" id="suggestMonsterModal">
@@ -63,6 +75,19 @@
       <div class="modal-buttons">
         <button class="border" onclick="suggestMonster()">Suggest!</button>
         <button class="border" onclick="toggleModalSuggestMonster(false)">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="leaderboardModal">
+    <div class="modal border leaderboard">
+      <p class="title">Leaderboard</p>
+      <div class="modal-content">
+        <div id="leaderboardGrid"></div>
+      </div>
+      <div class="modal-buttons">
+        <button class="border" onclick="initLeaderboard()">Reload</button>
+        <button class="border" onclick="toggleModalLeaderboard(false)">Close</button>
       </div>
     </div>
   </div>
@@ -90,6 +115,7 @@
               <li id="normalMode"><button>Normal Mode</button></li>
               <li id="infiniteMode"><button>Infinite Mode</button></li>
               <li id="suggestMonsterSideBar"><button>Suggest Npc</button></li>
+              <li id="leaderboardSideBar"><button>Leaderboard</button></li>
             </ul>
           </nav>
         </aside>
@@ -169,6 +195,9 @@
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/textfit/2.4.0/textFit.min.js"></script>
+  <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+  <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+  <script src="js/commons.js"></script>
   <script src="js/script.js"></script>
 </body>
 

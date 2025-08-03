@@ -117,6 +117,35 @@ namespace DeepwokendleApi.Controllers
             }
         }
 
+        [HttpGet("daily-monster")]
+        public async Task<IActionResult> GetDailyMonster()
+        {
+            try
+            {
+                int? monsterId = await _monsterService.GetDailyMonsterAsync();
+                return Ok(monsterId);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize]
+        [HttpGet("infinite-monster")]
+        public async Task<IActionResult> GetInfiniteMonster(string username)
+        {
+            try
+            {
+                int? monsterId = await _monsterService.GetInfiniteMonsterAsync(username);
+                return Ok(monsterId);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateMonster(int id, [FromBody] MonsterCommand dto)
