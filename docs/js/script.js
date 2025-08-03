@@ -90,10 +90,10 @@ async function initInfiniteMode() {
   $('.columns').css('margin-top', '22px');
   $("#firstGuessText").show();
   await loadSelect2Data();
-  amountsGuessed = await fetchStreakAmount();
-  $('#amountsGuessed').text(`Tries: ${amountsGuessed}/5`);
-  updateStreakUI();
   var randomCharacterId = await fetchRandomInfiniteMonster();
+  amountsGuessed = await fetchStreakAmount();
+  $('#amountsGuessed').text(`Tries: ${amountsGuessed ?? 0}/5`);
+  updateStreakUI();
   randomCharacter = monstersDataSource.find(monster => monster.id === randomCharacterId);
   guessInput.prop('disabled', false);
   $(".btn").prop("disabled", false).removeClass("disabled");
@@ -114,6 +114,7 @@ async function guessCharacter() {
   } else {
     if (debounceCharacter)
       return;
+    showLoading();
     debounceCharacter = true;
     amountsGuessed++;
     const attemptData = {
@@ -132,10 +133,10 @@ async function guessCharacter() {
     });
     debounceCharacter = false;
     if (!response.ok) {
+      hideLoading();
       throw new Error(`Error at registering attempt`);
     }
-    const returnedMonsterIdText = await response.text();
-    const returnedMonsterId = parseInt(returnedMonsterIdText, 10);
+    hideLoading();
   }
   $('#amountsGuessed').text(`Tries: ${amountsGuessed}/${mode == 'infinite' ? '5' : '∞'}`);
   const monster = monstersDataSource.find(m => m.id == guessedId);
@@ -474,7 +475,7 @@ async function fetchStreakAmount() {
     for (const id of result.npcsGuessedIds) {
       await new Promise(resolve => setTimeout(resolve, delay));
       showCharacter(id);
-      delay += 250;
+      delay += 75;
       hideLoading();
     }
     hideLoading();
@@ -920,9 +921,7 @@ async function loginUser() {
       pendingLoginResolver = null;
       pendingLoginRejector = null;
     }
-
     return result;
-
   } catch (error) {
     hideLoading();
     Swal.fire({

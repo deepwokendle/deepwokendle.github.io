@@ -106,7 +106,7 @@ public class MonsterService : IMonsterService
 
         if (monsterId == null)
         {
-            const string randomSql = "SELECT id FROM monster ORDER BY RANDOM() LIMIT 1;";
+            const string randomSql = "SELECT id FROM monster where pending = false ORDER BY RANDOM() LIMIT 1;";
             monsterId = await conn.QueryFirstAsync<int>(randomSql);
             const string insertSql = "INSERT INTO generated_monster (user_at_creation, monster_id, completed) VALUES (@Username, @MonsterId, false);";
             await conn.ExecuteAsync(insertSql, new { Username = username, MonsterId = monsterId });
