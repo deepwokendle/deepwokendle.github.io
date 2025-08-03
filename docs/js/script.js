@@ -56,6 +56,7 @@ function hideLoading() {
 }
 
 async function initNormalMode() {
+  $("#firstGuessText").css("top", "60%");
   showLoading();
   $('#guessBtn').text("GUESS").off('click').on('click', guessCharacter);
   mode = 'normal';
@@ -78,6 +79,8 @@ async function initNormalMode() {
 }
 
 async function initInfiniteMode() {
+  $("#firstGuessText").css("top", "65%");
+  $(".tempContainer").show();
   showLoading();
   correctShown = false;
   guessInput.val(select2Data[0].id).trigger('change');
@@ -103,14 +106,15 @@ function updateStreakUI() {
 }
 
 async function guessCharacter() {
-  if (debounceCharacter)
-    return;
-  debounceCharacter = true;
+  $(".tempContainer").hide();
   const guessedId = guessInput.val();
   if (mode === 'normal') {
     amountsGuessed++;
     localStorage.setItem(dailyCountKey, amountsGuessed);
   } else {
+    if (debounceCharacter)
+      return;
+    debounceCharacter = true;
     amountsGuessed++;
     const attemptData = {
       MonsterId: parseInt(guessedId, 10),
@@ -274,6 +278,7 @@ async function guessCharacter() {
 }
 
 function showCharacter(id) {
+  $(".tempContainer").hide();
   const monster = monstersDataSource.find(m => m.id == id);
   const correct = monster.id == randomCharacter.id;
   if (correct) $("#guessBtn").off('click');
@@ -362,6 +367,7 @@ function checkIfAlreadyWon() {
 }
 
 function showCorrectCharacter() {
+  $(".tempContainer").hide();
   guessInput.val(randomCharacter.id).trigger('change');
   let html = `<div class="col-md-12 rowGuessed firstGuess">`;
   $("#firstGuessText").css("display", "none");
@@ -461,7 +467,7 @@ async function fetchStreakAmount() {
     let username = localStorage.getItem("username");
     let token = localStorage.getItem("token");
     const response = await fetch(getApiUrl() + "/Attempts/get-streak?username=" + (token ? username : null));
-    if (!response.ok) throw new Error("Error while trying to fetch infinite random monster");
+    if (!response.ok) throw new Error("Error while trying to fetch streaks");
     const result = await response.json();
     infiniteStreak = result.streakAmmount ?? 0;
     let delay = 0;
