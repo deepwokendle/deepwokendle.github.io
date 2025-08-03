@@ -20,6 +20,8 @@ html,
 body {
     background: radial-gradient(#18221a, #04100d);
     height: 100vh;
+    width:100%;
+    flex: 1 1;
 }
 
 body{
@@ -716,4 +718,16 @@ input:focus {
 #overlay.visible {
     opacity: 1;
     visibility: visible;
+}
+
+@media (max-width: 842px) {
+  .ad-side {
+    display: none;
+  }
+  .ad-layout {
+    justify-content: center;
+  }
+  #mainGame {
+    flex: 1 1 100%;
+  }
 }
