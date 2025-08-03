@@ -62,7 +62,7 @@ public class MonsterService : IMonsterService
     public async Task<IEnumerable<Monster>> GetAllMonstersAsync()
     {
         using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        const string sql = "SELECT id, name, picture, mainhabitat AS MainHabitat, humanoid, elementid AS ElementId, categoryid AS CategoryId FROM monster";
+        const string sql = "SELECT id, name, picture, mainhabitat AS MainHabitat, humanoid, elementid AS ElementId, categoryid AS CategoryId FROM monster where pending = false";
         return await conn.QueryAsync<Monster>(sql);
     }
 
