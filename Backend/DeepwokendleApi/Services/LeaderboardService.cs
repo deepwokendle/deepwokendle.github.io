@@ -24,6 +24,7 @@ public class LeaderboardService : ILeaderboardService
               username as Username,
               max_streak as MaxStreak
             FROM users
+            WHERE max_streak > 5
             ORDER BY max_streak DESC;
         ");
         var results = await connection.QueryAsync<LeaderboardQuery>(sql.ToString());

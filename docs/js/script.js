@@ -472,7 +472,7 @@ async function fetchStreakAmount() {
       hideLoading();
     }
     hideLoading();
-    return result.attemptsAmount ?? 0;
+    return result.attemptsAmount || 0;
   } catch (error) {
     hideLoading();
     console.error("Error while trying to fetch infinite random monster:", error);
