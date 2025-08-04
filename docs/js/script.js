@@ -57,6 +57,7 @@ function hideLoading() {
 
 async function initNormalMode() {
   $("#firstGuessText").css("top", "60%");
+  $(".tempContainer").show();
   showLoading();
   $('#guessBtn').text("GUESS").off('click').on('click', guessCharacter);
   mode = 'normal';
