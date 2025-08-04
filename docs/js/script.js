@@ -92,10 +92,10 @@ async function initInfiniteMode() {
   $("#firstGuessText").show();
   await loadSelect2Data();
   var randomCharacterId = await fetchRandomInfiniteMonster();
+  randomCharacter = monstersDataSource.find(monster => monster.id === randomCharacterId);
   amountsGuessed = await fetchStreakAmount();
   $('#amountsGuessed').text(`Tries: ${amountsGuessed ?? 0}/5`);
   updateStreakUI();
-  randomCharacter = monstersDataSource.find(monster => monster.id === randomCharacterId);
   guessInput.prop('disabled', false);
   $(".btn").prop("disabled", false).removeClass("disabled");
   $("#guessBtn").off('click').on('click', guessCharacter);
