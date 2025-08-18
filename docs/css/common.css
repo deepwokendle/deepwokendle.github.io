@@ -1,0 +1,37 @@
+:root {
+    --button-background: #04100d;
+    --background: radial-gradient(#18221a, #04100d);
+    --color: white;
+    --container-background: rgba(216, 215, 202, 1);
+    --text-color: #04100d;
+}
+
+.gridjs-footer button,
+.border,
+.select2,
+.select2-dropdown,
+.select2-search__field {
+    border-image: url('../img/border.png') 45% !important;
+    border-image-width: 15px !important;
+    border-image-outset: 2px !important;
+    outline: none;
+}
+
+.underscoreAnimation{
+    position: relative;
+}
+
+.underscoreAnimation::before {
+    content: "";
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    height: 2px;
+    width: 0%;
+    background-color: currentColor;
+    transition: width 0.3s ease;
+}
+
+.underscoreAnimation:hover::before {
+    width: 100%;
+}
