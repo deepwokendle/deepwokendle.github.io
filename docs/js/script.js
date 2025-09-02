@@ -646,7 +646,9 @@ async function initLeaderboard() {
           { id: 'maxStreak', name: 'Max Streak' },
         ],
         data: gridData,
-        pagination: { enabled: true, limit: 10 },
+        pagination: {
+          buttonsCount: 0
+        },
         sort: true,
         search: true,
         resizable: true,
@@ -663,6 +665,7 @@ async function initLeaderboard() {
     console.log(err);
   }
 }
+
 async function getElementData() {
   try {
     const response = await fetch(getApiUrl() + "/Elements/getElements");
@@ -1134,7 +1137,7 @@ window.addEventListener('keydown', e => {
 setInterval(updateResetTimer, 1000);
 
 setInterval(() => {
-  if(getComputedStyle(sharkoContainer).animationPlayState == 'paused'){
+  if (getComputedStyle(sharkoContainer).animationPlayState == 'paused') {
     sharkoImg.src = images[0];
     return;
   }
