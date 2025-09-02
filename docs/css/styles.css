@@ -295,12 +295,14 @@ h1 {
     align-items: center;
     gap: 1rem;
     flex: 1 1;
+    min-height:100vh;
 }
 
 .ad-side {
     flex: 0 0 160px;
     min-width: 0px;
     max-width: 200px;
+    display: none;
 }
 
 #mainGame {
