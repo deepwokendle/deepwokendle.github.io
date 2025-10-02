@@ -87,7 +87,7 @@ public class MonsterService : IMonsterService
 
         if (monsterId == null)
         {
-            const string randomSql = "SELECT id FROM monster ORDER BY RANDOM() LIMIT 1;";
+            const string randomSql = "SELECT id FROM monster WHERE PENDING IS FALSE ORDER BY RANDOM() LIMIT 1;";
             monsterId = await conn.QueryFirstAsync<int>(randomSql);
             const string insertSql = "INSERT INTO daily_monster (created_at, monster_id) VALUES (@Today, @MonsterId);";
             await conn.ExecuteAsync(insertSql, new { Today = today, MonsterId = monsterId });
