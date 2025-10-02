@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Deepwokendle</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/common.css">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
   <link rel="shortcut icon" href="img/deepwoken-logo.ico" type="image/x-icon">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
@@ -50,17 +51,15 @@
           <button class="border" onclick="loginUser()">Login</button>
           <button class="border" onclick="toggleModal(false)">Close</button>
         </div>
-        <a onclick="manageSignUpLoginModal()" class="register">
+        <a onclick="manageSignUpLoginModal()" class="register underscoreAnimation">
           Create an account -->
-          <span class="underscoreAnimation"></span>
         </a>
       </div>
       <div class="loggedInContainer">
         <i class="fa-solid fa-user"></i>
         <span class="username"></span>
-        <a onclick="logout()" class="register">
+        <a onclick="logout()" class="register underscoreAnimation">
           Logout -->
-          <span class="underscoreAnimation"></span>
         </a>
       </div>
     </div>
@@ -181,6 +180,14 @@
         (adsbygoogle = window.adsbygoogle || []).push({});
       </script>
     </div>
+  </div>
+  <footer class="footer">
+    <span>&copy; 2025 Deepwokendle</span> |
+    <a class="underscoreAnimation privacyLink" href="privacy-policies.html">Privacy Policy</a>
+  </footer>
+
+  <div class="mini-sharko-container">
+    <img src="img/mini-sharko.png" class="mini-sharko" alt="Mini Sharko" onclick="annihilateBabySharko()">
   </div>
   <div class="fab-container">
     <button class="fab-main" aria-label="Mais opções">

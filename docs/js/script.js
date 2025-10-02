@@ -26,6 +26,10 @@ const sidebar = document.getElementById('sidebar');
 const overlay = document.getElementById('overlay');
 const togglePassword = document.getElementById("togglePassword");
 const passwordInput = document.getElementById("passwordInput");
+const sharkoImg = document.querySelector('.mini-sharko');
+const sharkoContainer = document.querySelector('.mini-sharko-container');
+const images = ['img/mini-sharko.png', 'img/mini-sharko-2.png'];
+let fi = 0;
 
 $(document).ready(function () {
   initNormalMode();
@@ -642,7 +646,9 @@ async function initLeaderboard() {
           { id: 'maxStreak', name: 'Max Streak' },
         ],
         data: gridData,
-        pagination: { enabled: true, limit: 10 },
+        pagination: {
+          buttonsCount: 0
+        },
         sort: true,
         search: true,
         resizable: true,
@@ -659,6 +665,7 @@ async function initLeaderboard() {
     console.log(err);
   }
 }
+
 async function getElementData() {
   try {
     const response = await fetch(getApiUrl() + "/Elements/getElements");
@@ -821,12 +828,12 @@ function manageSignUpLoginModal() {
     title.textContent = 'Login';
     actionButton.textContent = 'Login';
     actionButton.setAttribute('onclick', 'loginUser()');
-    switchButton.innerHTML = 'Create an account --> <span class="underscoreAnimation"></span>';
+    switchButton.innerHTML = 'Create an account -->';
   } else {
     title.textContent = 'Sign Up';
     actionButton.textContent = 'Sign Up';
     actionButton.setAttribute('onclick', 'signupUser()');
-    switchButton.innerHTML = 'Already have an account? --> <span class="underscoreAnimation"></span>';
+    switchButton.innerHTML = 'Already have an account? -->';
   }
 
   modal.classList.add('show');
@@ -1049,6 +1056,76 @@ async function suggestMonster() {
   }
 }
 
+function annihilateBabySharko() {
+  const img = document.querySelector('.mini-sharko');
+  if (!img) return;
+
+  if (img.dataset.exploding === '1') return;
+  img.dataset.exploding = '1';
+
+  const rect = img.getBoundingClientRect();
+  const src = img.src;
+  const body = document.body;
+  const particlesWrap = document.createElement('div');
+  particlesWrap.className = 'sharko-particles';
+  particlesWrap.style.left = (rect.left + window.scrollX) + 'px';
+  particlesWrap.style.top = (rect.top + window.scrollY) + 'px';
+  particlesWrap.style.width = rect.width + 'px';
+  particlesWrap.style.height = rect.height + 'px';
+  body.appendChild(particlesWrap);
+  img.style.visibility = 'hidden';
+  const cols = 6;
+  const rows = 6;
+  const total = cols * rows;
+  const pw = rect.width / cols;
+  const ph = rect.height / rows;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const part = document.createElement('div');
+      part.className = 'particle';
+      part.style.width = Math.ceil(pw) + 'px';
+      part.style.height = Math.ceil(ph) + 'px';
+      part.style.left = Math.round(c * pw) + 'px';
+      part.style.top = Math.round(r * ph) + 'px';
+      part.style.backgroundImage = `url("${src}")`;
+      part.style.backgroundPosition = `-${Math.round(c * pw)}px -${Math.round(r * ph)}px`;
+      part.style.backgroundSize = `${rect.width}px ${rect.height}px`;
+      particlesWrap.appendChild(part);
+
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 150 + Math.random() * 700;
+      const translateX = Math.cos(angle) * distance;
+      const translateY = Math.sin(angle) * distance - (200 * Math.random());
+      const rotateDeg = (Math.random() * 720) - 360;
+      const scale = 0.6 + Math.random() * 1.8;
+
+      const delay = Math.random() * 150; // ms
+
+      setTimeout(() => {
+        part.style.transform = `translate3d(${translateX}px, ${translateY}px, 0) rotate(${rotateDeg}deg) scale(${scale})`;
+        part.style.opacity = '0';
+      }, 20 + delay);
+    }
+  }
+
+  particlesWrap.animate([
+    { transform: 'translateY(0) rotate(0deg)' },
+    { transform: 'translateY(-6px) rotate(-3deg)' },
+    { transform: 'translateY(3px) rotate(2deg)' },
+    { transform: 'translateY(0) rotate(0deg)' }
+  ], {
+    duration: 350,
+    iterations: 2,
+    easing: 'ease-out'
+  });
+
+  const totalLifetime = 2200;
+  setTimeout(() => {
+    particlesWrap.remove();
+    img.remove();
+  }, totalLifetime + 100);
+}
 
 window.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
@@ -1058,3 +1135,17 @@ window.addEventListener('keydown', e => {
 });
 
 setInterval(updateResetTimer, 1000);
+
+setInterval(() => {
+  if (getComputedStyle(sharkoContainer).animationPlayState == 'paused') {
+    sharkoImg.src = images[0];
+    return;
+  }
+  fi = (fi + 1) % images.length;
+  sharkoImg.src = images[fi];
+  sharkoImg.classList.toggle('sharko-iteration')
+}, 200);
+
+sharkoContainer.addEventListener('animationiteration', () => {
+  sharkoImg.classList.toggle('flipped');
+});
