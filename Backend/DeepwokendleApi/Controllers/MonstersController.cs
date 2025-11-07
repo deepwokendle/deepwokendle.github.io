@@ -122,8 +122,8 @@ namespace DeepwokendleApi.Controllers
         {
             try
             {
-                object monster = await _monsterService.GetDailyMonsterAsync();
-                return Ok(monster);
+                int? monsterId = await _monsterService.GetDailyMonsterAsync();
+                return Ok(monsterId);
             }
             catch (Exception ex)
             {

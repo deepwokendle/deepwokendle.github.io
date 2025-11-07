@@ -77,7 +77,7 @@ public class MonsterService : IMonsterService
         return await conn.QueryFirstOrDefaultAsync<Monster>(sql, new { Id = id });
     }
 
-    public async Task<object> GetDailyMonsterAsync()
+    public async Task<int?> GetDailyMonsterAsync()
     {
         using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
         await conn.OpenAsync();
@@ -93,13 +93,7 @@ public class MonsterService : IMonsterService
             await conn.ExecuteAsync(insertSql, new { Today = today, MonsterId = monsterId });
         }
 
-        var nextResetUtc = today.AddDays(1);
-
-        return new
-        {
-            monsterId,
-            nextResetUtc = nextResetUtc.ToString("o")
-        };
+        return monsterId;
     }
 
     public async Task<int?> GetInfiniteMonsterAsync(string username)

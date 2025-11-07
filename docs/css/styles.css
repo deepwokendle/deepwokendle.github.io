@@ -240,7 +240,7 @@ h1 {
     justify-content: center;
     right: 1rem;
     top: 2%;
-    z-index: 54;
+    z-index: 1000;
     transform: scale(2);
     transition: transform 200ms ease-in-out;
     margin-top: 10px;
@@ -449,27 +449,18 @@ input:focus {
     font-size: 11px;
 }
 
-.customizedScrollbar{
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.4) transparent;
-    scrollbar-gutter: stable always;
-}
-
 .rowsContainer::-webkit-scrollbar,
-.leaderboard::-webkit-scrollbar,
-.customizedScrollbar::-webkit-scrollbar {
+.leaderboard::-webkit-scrollbar {
     width: 8px;
 }
 
 .rowsContainer::-webkit-scrollbar-track,
-.leaderboard::-webkit-scrollbar-track,
-.customizedScrollbar::-webkit-scrollbar-track {
+.leaderboard::-webkit-scrollbar-track {
     background: var(--container-background);
 }
 
 .rowsContainer::-webkit-scrollbar-thumb,
-.leaderboard::-webkit-scrollbar-thumb,
-.customizedScrollbar::-webkit-scrollbar-thumb {
+.leaderboard::-webkit-scrollbar-thumb {
     background-color: var(--container-background);
     border-radius: 4px;
     border: 2px solid var(--container-background);
@@ -602,7 +593,7 @@ input:focus {
     bottom: 1rem;
     left: -250px;
     width: fit-content;
-    z-index: 1;
+    z-index: 997;
     animation: moveSharko 40s linear infinite alternate;
     will-change: left;
 }
@@ -657,21 +648,14 @@ input:focus {
     display: block;
 }
 
-.fab-container, .chat-container {
+.fab-container {
     position: fixed;
     bottom: 2rem;
     right: 1rem;
-    z-index: 55;
+    z-index: 1000;
 }
 
-.chat-container {
-    right:5rem;
-}
-.chat-main i {
-    transform:scale(1.8);
-}
-
-.fab-main, .chat-main {
+.fab-main {
     width: 56px;
     height: 56px;
     border-radius: 50%;
@@ -682,7 +666,6 @@ input:focus {
     align-items: center;
     justify-content: center;
     transition: 200ms;
-    color:white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -751,124 +734,16 @@ input:focus {
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .fab-main:hover, .chat-main:hover {
+    .fab-main:hover {
         transform: scale(1.1);
         background: var(--container-background);
     }
 
-    .fab-main:hover span, .chat-main:hover i {
+    .fab-main:hover span {
         color: black;
     }
 }
 
-/* Chat Sidebar */
-#chatSidebar {
-    position: fixed;
-    right: -70%;
-    top: 0;
-    max-width: 400px;
-    width: 60%;
-    height: 100%;
-    padding: 2px;
-    background: #f5f5f5;
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
-    transition: right 0.3s ease;
-    z-index: 1001;
-}
-#chatSidebar.open{
-    right:0;
-}
-
-.chatContainer{
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding:10px;
-}
-
-#chat{
-    max-height: 655px;
-    overflow: auto;
-    height: 100%;
-    padding-right:8px;
-}
-
-#chat p {
-    word-break: break-all;
-}
-
-#messagesContainer{
-    height: 590px;
-}
-
-#message {
-    padding: 15px 5px 2px;
-    width: 100%;
-    max-height: 120px;
-    height: 157px;
-    min-height: 50px;
-    resize: vertical;
-    max-width: 300px;
-}
-
-#btnSendMessage{
-    padding:10px;
-    cursor:pointer;
-    transition: 300ms ease-in-out;
-    position: relative;
-    z-index:0;
-    width:70px;
-    max-height:50px;
-}
-
-#btnSendMessage::after{
-    content: "";
-    position:absolute;
-    bottom:0;
-    left:0;
-    height:0%;
-    width:100%;
-    z-index:-1;
-    background:var(--background);
-    transition: 200ms ease-in-out;
-}
-
-#btnSendMessage:hover::after{
-    height:100%;
-}
-
-#btnSendMessage:hover{
-    color:white;
-}
-
-#userActionsContainer{
-    display: flex;
-    position: relative;
-    width: 100%;
-    gap: 8px;
-    justify-content:space-between;
-    align-items: end;
-}
-
-.chatBoxContainer{
-    display: flex;
-    position: relative;
-    width: 100%;
-}
-
-#txtCharactersRemaining{
-    position: absolute;
-    top: 0px;
-    font-size: 9px;
-    padding: 2px 0 0 2px;
-    left: 1px;
-    width: 97%;
-    max-width: 300px;
-    height: 15px;
-    background-color: white;
-}
-/* Chat Sidebar */
 /* Sidebar */
 #hamburger {
     position: absolute;
