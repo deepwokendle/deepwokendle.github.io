@@ -1,3 +1,4 @@
+using DeepwokendleApi.Hubs;
 using DeepwokendleApi.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -39,14 +40,22 @@ public class Program
                 }
             });
         });
-
+        var allowedOrigins = new[] {
+            "http://localhost:8080",         
+            "http://192.168.1.184:8080",     
+            "https://deepwokendle.github.io",
+            "https://deepwokendle.onrender.com"
+        };
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("AllowAll",
-                policy => policy
-                    .AllowAnyOrigin()
+            options.AddPolicy("CorsWithCredentials", policy =>
+            {
+                policy
+                    .WithOrigins(allowedOrigins) 
+                    .AllowAnyHeader()
                     .AllowAnyMethod()
-                    .AllowAnyHeader());
+                    .AllowCredentials();
+            });
         });
 
         #region [Loot]
@@ -88,6 +97,7 @@ public class Program
         #region [Leaderboard]
         builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
         #endregion [Leaderboard]
+
         builder.Services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -106,21 +116,59 @@ public class Program
                     ),
                     ClockSkew = TimeSpan.Zero
                 };
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"].FirstOrDefault();
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
         builder.Services.AddAuthorization();
+        builder.Services.AddSignalR();
         var app = builder.Build();
-
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
             app.UseSwaggerUI();
         }
-        app.UseCors("AllowAll");
+
         app.UseHttpsRedirection();
+        app.UseRouting();
+
+        app.Use(async (context, next) =>
+        {
+            if (string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+            {
+                var origin = context.Request.Headers["Origin"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(origin) && allowedOrigins.Contains(origin))
+                {
+                    context.Response.StatusCode = 200;
+                    context.Response.Headers["Access-Control-Allow-Origin"] = origin;
+                    context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
+                    context.Response.Headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS";
+                    context.Response.Headers["Access-Control-Allow-Headers"] = context.Request.Headers["Access-Control-Request-Headers"].FirstOrDefault() ?? "*";
+                    await context.Response.CompleteAsync();
+                    return;
+                }
+            }
+            await next();
+        });
+
+        app.UseCors("CorsWithCredentials");
         app.UseAuthentication();
         app.UseAuthorization();
+
         app.MapControllers();
+        app.MapHub<ChatHub>("api/chatHub");
+
         await app.RunAsync();
     }
 }

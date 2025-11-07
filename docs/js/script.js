@@ -22,7 +22,9 @@ const _nativeRandom = Math.random;
 const fab = document.querySelector('.fab-container');
 const moreInfoBtn = fab.querySelector('.fab-main');
 const hamburger = document.getElementById('hamburger');
+const chatButton = document.getElementById('chatButton');
 const sidebar = document.getElementById('sidebar');
+const chatSidebar = document.getElementById('chatSidebar');
 const overlay = document.getElementById('overlay');
 const togglePassword = document.getElementById("togglePassword");
 const passwordInput = document.getElementById("passwordInput");
@@ -460,8 +462,11 @@ async function fetchRandomMonster() {
   try {
     const response = await fetch(getApiUrl() + "/Monsters/daily-monster");
     if (!response.ok) throw new Error("Error while trying to fetch random monster");
-    const monster = await response.json();
-    return monster;
+    const data = await response.json();
+    if (data.nextResetUtc) {
+      nextResetUtc = new Date(data.nextResetUtc);
+    } 
+    return data.monsterId;
   } catch (error) {
     console.error("Error while trying to fetch random monster:", error);
     return [];
@@ -546,43 +551,66 @@ async function loadSelect2Data() {
 }
 function updateResetTimer() {
   if (alreadyGuessed != "guessed") return;
+  if (!nextResetUtc) return;
+
   const now = new Date();
-  const tomorrow = new Date();
-  tomorrow.setHours(24, 0, 0, 0);
-  const diffMs = tomorrow - now;
+  const diffMs = nextResetUtc - now;
+
+  if (diffMs <= 0) {
+    $('#resetTimer').text(`Character resetting soon...`);
+    return;
+  }
+
   const hours = String(Math.floor(diffMs / 3600000)).padStart(2, '0');
   const minutes = String(Math.floor((diffMs % 3600000) / 60000)).padStart(2, '0');
   const seconds = String(Math.floor((diffMs % 60000) / 1000)).padStart(2, '0');
+
   $('#resetTimer').text(`Character resetting in ${hours}:${minutes}:${seconds}`);
 }
 
-function toggleSidebar() {
-  sidebar.classList.toggle('open');
-  sidebar.classList.toggle('border');
-  overlay.classList.toggle('visible');
+function clearSideBar() {
+  if (sidebar.classList.contains('open')) toggleSidebar('main');
+  if (chatSidebar.classList.contains('open')) toggleSidebar('chat');
 }
 
-hamburger.addEventListener('click', toggleSidebar);
+function toggleSidebar(type) {
+  if (type === 'main') {
+    sidebar.classList.toggle('open');
+    sidebar.classList.toggle('border');
+    if (chatSidebar.classList.contains('open')) toggleSidebar('chat');
+  } else if (type === 'chat') {
+    chatSidebar.classList.toggle('open');
+    chatSidebar.classList.toggle('border');
+    if (sidebar.classList.contains('open')) toggleSidebar('main');
+  }
 
-overlay.addEventListener('click', toggleSidebar);
+  const anyOpen = sidebar.classList.contains('open') || chatSidebar.classList.contains('open');
+  overlay.classList.toggle('visible', anyOpen);
+}
+hamburger.addEventListener('click', () => toggleSidebar('main'));
+chatButton.addEventListener('click', () => toggleSidebar('chat'));
+overlay.addEventListener('click', () => {
+  if (sidebar.classList.contains('open')) toggleSidebar('main');
+  if (chatSidebar.classList.contains('open')) toggleSidebar('chat');
+});
 
 document.getElementById('normalMode').addEventListener('click', () => {
   mode = 'normal';
-  toggleSidebar();
+  clearSideBar();
   initNormalMode();
 });
 document.getElementById('infiniteMode').addEventListener('click', () => {
   mode = 'infinite';
-  toggleSidebar();
+  clearSideBar();
   initInfiniteMode();
 });
 document.getElementById('suggestMonsterSideBar').addEventListener('click', () => {
-  toggleSidebar();
+  clearSideBar();
   toggleModalSuggestMonster(true);
 });
 
 document.getElementById('leaderboardSideBar').addEventListener('click', () => {
-  toggleSidebar();
+  clearSideBar();
   toggleModalLeaderboard(true);
 });
 
@@ -949,6 +977,25 @@ async function loginUser() {
     }
 
     return null;
+  }
+}
+
+function validateMaxInputLength(maxLength, element, idForFeedback) {
+  const currLength = $(element).val().length;
+  const remaining = maxLength - currLength;
+
+  const feedback = $(`#${idForFeedback}`);
+  if (remaining == 200) {
+     feedback.text(`200 characters left.`)
+            .css('color', 'black');
+  }
+  else if (currLength > maxLength) {
+    $(element).val($(element).val().substring(0, maxLength));
+    feedback.text(`0 characters left.`)
+            .css('color', 'red');
+  } else {
+    feedback.text(`${remaining} characters left.`)
+            .css('color', remaining <= 100 ? 'orange' : 'gray');
   }
 }
 

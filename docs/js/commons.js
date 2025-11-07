@@ -78,8 +78,7 @@ window.fetch = async function (input, init = {}) {
 };
 function getApiUrl() {
     const host = window.location.hostname;
-
-    if (!host || host === 'localhost' || host === '127.0.0.1') {
+    if (!host || host === 'localhost' || host === '127.0.0.1' || host === '192.168.1.184') {
         return 'https://localhost:7021/api';
     }
 

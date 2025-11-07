@@ -126,6 +126,20 @@
             </ul>
           </nav>
         </aside>
+        <aside id="chatSidebar">
+          <div class="chatContainer">
+            <div id="messagesContainer">
+              <div id="chat" class="customizedScrollbar"></div>
+            </div>
+            <div id="userActionsContainer">
+              <div class="chatBoxContainer">
+                <span id="txtCharactersRemaining">200 characters left.</span>
+                <textarea id="message" class="border" autocomplete="off" placeholder="Type your message here!" oninput="validateMaxInputLength(200, this, 'txtCharactersRemaining')"></textarea>
+              </div>
+              <button id="btnSendMessage" onclick="sendMessage()" class="border">Send</button>
+            </div>
+          </div>
+        </aside>
         <div id="overlay"></div>
         <div id="attempts" class="rowsContainer border">
           <div class="headerContainer">
@@ -189,8 +203,13 @@
   <div class="mini-sharko-container">
     <img src="img/mini-sharko.png" class="mini-sharko" alt="Mini Sharko" onclick="annihilateBabySharko()">
   </div>
+  <div class="chat-container">
+      <button class="chat-main" id="chatButton" aria-label="Chat">
+        <i class="far fa-comment"></i>
+      </button>
+  </div>
   <div class="fab-container">
-    <button class="fab-main" aria-label="Mais opções">
+    <button class="fab-main" aria-label="More options">
       <span class="fab-icon">&lt;</span>
     </button>
     <div class="fab-actions">
@@ -212,9 +231,10 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/textfit/2.4.0/textFit.min.js"></script>
   <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
-  <script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
   <script src="js/commons.js?v=1"></script>
-  <script src="js/script.js?v=1"></script>
+  <script src="js/signalR.js?v=1.1"></script>
+  <script src="js/script.js?v=1.1"></script>
 </body>
 
 </html>
