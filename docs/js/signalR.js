@@ -2,7 +2,7 @@ let connection = null;
 let sendQueue = [];
 let isStarting = false;
 let lastMessageTime = 0;
-
+let cooldownMs = 500;
 function getToken() {
     return localStorage.getItem('token') || null;
 }
