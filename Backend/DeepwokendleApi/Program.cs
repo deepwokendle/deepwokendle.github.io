@@ -44,6 +44,7 @@ public class Program
             "http://localhost:8080",         
             "http://192.168.1.184:8080",     
             "https://deepwokendle.github.io",
+            "https://www.deepwokendle.com",
             "https://deepwokendle.onrender.com"
         };
         builder.Services.AddCors(options =>
