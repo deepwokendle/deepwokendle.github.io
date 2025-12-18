@@ -41,8 +41,6 @@ public class Program
             });
         });
         var allowedOrigins = new[] {
-            "http://localhost:8080",         
-            "http://192.168.1.184:8080",     
             "https://deepwokendle.github.io",
             "https://www.deepwokendle.com",
             "https://deepwokendle.onrender.com"
