@@ -15,4 +15,7 @@ public class LeaderboardService : ILeaderboardService
 
     public Task<List<MonthlyLeaderboardQuery>> GetMonthlyLeaderboardAsync()
         => _leaderboardRepository.GetMonthlyLeaderboardAsync();
+
+    public Task<List<MonthlyLeaderboardQuery>> GetDailyLeaderboardAsync()
+        => _leaderboardRepository.GetDailyLeaderboardAsync();
 }

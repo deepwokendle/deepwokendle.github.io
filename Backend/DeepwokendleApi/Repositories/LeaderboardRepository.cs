@@ -42,8 +42,28 @@ namespace DeepwokendleApi.Repositories
                   COUNT(*)::int AS Score
                 FROM attempts a
                 WHERE a.correct = true
-                  AND a.infinite = false
+                  AND a.infinite = true
                   AND DATE_TRUNC('month', a.guess_date) = DATE_TRUNC('month', CURRENT_DATE)
+                GROUP BY a.""user""
+                ORDER BY Score DESC
+                LIMIT 100;
+            ";
+            var results = await connection.QueryAsync<MonthlyLeaderboardQuery>(sql);
+            return [.. results];
+        }
+
+        public async Task<List<MonthlyLeaderboardQuery>> GetDailyLeaderboardAsync()
+        {
+            using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            var sql = @"
+                SELECT
+                  ROW_NUMBER() OVER (ORDER BY COUNT(*) DESC) AS Place,
+                  a.""user"" AS Username,
+                  COUNT(*)::int AS Score
+                FROM attempts a
+                WHERE a.correct = true
+                  AND a.infinite = true
+                  AND a.guess_date = CURRENT_DATE
                 GROUP BY a.""user""
                 ORDER BY Score DESC
                 LIMIT 100;

@@ -120,6 +120,12 @@
   margin-top: -12px;
 }
 
+.countdown {
+  font-family: monospace;
+  color: rgba(216, 215, 202, 0.75);
+  font-size: 0.82rem;
+}
+
 @media (max-width: 600px) {
   .page {
     padding: 16px;

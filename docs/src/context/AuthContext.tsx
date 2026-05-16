@@ -37,6 +37,7 @@ interface AuthContextValue {
   toggleLoginSignupMode: () => void;
   resolveLogin: (token: string, username: string) => void;
   rejectLogin: () => void;
+  waitForLogin: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -99,6 +100,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const waitForLogin = useCallback((): Promise<void> => {
+    return new Promise<void>((resolve, reject) => {
+      pendingResolver.current = resolve;
+      pendingRejector.current = reject;
+      openLoginModal(true);
+    });
+  }, [openLoginModal]);
+
   setUnauthorizedHandler(async () => {
     const hasToken = !!localStorage.getItem('token');
     logout();
@@ -130,6 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         toggleLoginSignupMode,
         resolveLogin,
         rejectLogin,
+        waitForLogin,
       }}
     >
       {children}

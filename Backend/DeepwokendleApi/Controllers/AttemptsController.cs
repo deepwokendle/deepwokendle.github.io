@@ -174,10 +174,10 @@ namespace DeepwokendleApi.Controllers
 
                 if (correct)
                 {
-                    var username = User.Identity?.Name ?? "A player";
+                    var displayName = User.Identity?.Name ?? "A player";
                     var attemptsStr = command.AmountsGuessed == 1 ? "1 attempt" : $"{command.AmountsGuessed} attempts";
                     _ = Task.Run(() => _hubContext.Clients.All.SendAsync("ReceiveSystemMessage",
-                        $"{username} has guessed a character in normal mode with {attemptsStr}!"));
+                        $"{displayName} has guessed a character in normal mode with {attemptsStr}!"));
                 }
 
                 return Ok(new { correct, fields });

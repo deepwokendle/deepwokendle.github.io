@@ -7,5 +7,6 @@ namespace DeepwokendleApi.Interfaces
     {
         Task<List<LeaderboardQuery>> GetLeaderboardAsync();
         Task<List<MonthlyLeaderboardQuery>> GetMonthlyLeaderboardAsync();
+        Task<List<MonthlyLeaderboardQuery>> GetDailyLeaderboardAsync();
     }
 }

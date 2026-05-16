@@ -17,7 +17,7 @@ import { useAuth } from '../context/AuthContext';
 import type { GameMode } from '../types';
 
 export default function GamePage() {
-  useAuth();
+  const { waitForLogin } = useAuth();
   const navigate = useNavigate();
   const { monsters, loadMonsters, isLoadingMonsters } = useMonsters();
   const { messages, sendMessage, loadOlderMessages, hasMoreHistory } = useSignalR();
@@ -50,8 +50,16 @@ export default function GamePage() {
     closeSidebars();
     setCurrentMode('infinite');
     const m = await loadMonsters();
-    initInfiniteMode(m);
-  }, [loadMonsters, initInfiniteMode]);
+    const needsLogin = await initInfiniteMode(m);
+    if (needsLogin) {
+      try {
+        await waitForLogin();
+        initInfiniteMode(m);
+      } catch {
+        // user dismissed the login modal
+      }
+    }
+  }, [loadMonsters, initInfiniteMode, waitForLogin]);
 
   useEffect(() => {
     startNormalMode();

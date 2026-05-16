@@ -76,10 +76,12 @@ export function useGame() {
     }
   }, []);
 
-  const initInfiniteMode = useCallback(async (monsters: Monster[]) => {
+  const initInfiniteMode = useCallback(async (monsters: Monster[]): Promise<boolean> => {
     setIsLoading(true);
     setMode('infinite');
     setGuesses([]);
+    setAmount(0);
+    setStreak(0);
     setDisabled(false);
     setAwaiting(false);
     setAlreadyGuessed(false);
@@ -91,7 +93,7 @@ export function useGame() {
         apiFetchStreak(),
       ]);
 
-      if (!monsterRes.ok || !streakRes.ok) return;
+      if (!monsterRes.ok || !streakRes.ok) return true;
 
       const streakData: StreakData = await streakRes.json();
 
@@ -106,8 +108,10 @@ export function useGame() {
         .filter(Boolean) as GuessRecord[];
 
       setGuesses(previous.reverse());
+      return false;
     } catch (err) {
       console.error(err);
+      return false;
     } finally {
       setIsLoading(false);
     }

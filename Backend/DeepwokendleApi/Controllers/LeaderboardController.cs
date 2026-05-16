@@ -46,5 +46,19 @@ namespace DeepwokendleApi.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("get-daily")]
+        public async Task<IActionResult> GetDailyLeaderboard()
+        {
+            try
+            {
+                var query = await _leaderboardService.GetDailyLeaderboardAsync();
+                return Ok(query);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

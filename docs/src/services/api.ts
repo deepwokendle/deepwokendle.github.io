@@ -64,6 +64,7 @@ export const apiFetchGuessedMonsters = () => apiFetch('/Attempts/guessed-monster
 export const apiFetchMonsterStats = (monsterId: number) => apiFetch(`/Attempts/monster-stats/${monsterId}`);
 export const apiFetchLeaderboard = () => apiFetch('/Leaderboard/get-leaderboard');
 export const apiFetchMonthlyLeaderboard = () => apiFetch('/Leaderboard/get-monthly');
+export const apiFetchDailyLeaderboard = () => apiFetch('/Leaderboard/get-daily');
 export const apiFetchElements = () => apiFetch('/Elements/getElements');
 export const apiFetchCategories = () => apiFetch('/Categories/getCategories');
 export const apiFetchLoots = () => apiFetch('/Loots/getLoots');
