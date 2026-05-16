@@ -19,13 +19,26 @@ namespace DeepwokendleApi.Controllers
             _leaderboardService = leaderboardService;
         }
 
-        [Authorize]
         [HttpGet("get-leaderboard")]
         public async Task<IActionResult> GetLeaderboard()
         {
             try
             {
                 List<LeaderboardQuery> query = await _leaderboardService.GetLeaderboardAsync();
+                return Ok(query);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("get-monthly")]
+        public async Task<IActionResult> GetMonthlyLeaderboard()
+        {
+            try
+            {
+                List<MonthlyLeaderboardQuery> query = await _leaderboardService.GetMonthlyLeaderboardAsync();
                 return Ok(query);
             }
             catch (Exception ex)

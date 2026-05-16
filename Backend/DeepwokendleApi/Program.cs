@@ -1,5 +1,7 @@
 using DeepwokendleApi.Hubs;
 using DeepwokendleApi.Interfaces;
+using DeepwokendleApi.Repositories;
+using DeepwokendleApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -58,8 +60,10 @@ public class Program
         });
 
         #region [Loot]
+        builder.Services.AddScoped<ILootRepository, LootRepository>();
         builder.Services.AddScoped<ILootService, LootService>();
         #region [LootCategory]
+        builder.Services.AddScoped<ILootCategoryRepository, LootCategoryRepository>();
         builder.Services.AddScoped<ILootCategoryService, LootCategoryService>();
         #endregion [LootCategory]
         #endregion [Loot]
@@ -69,38 +73,51 @@ public class Program
         #endregion [Bucket]
 
         #region [Location]
+        builder.Services.AddScoped<ILocationRepository, LocationRepository>();
         builder.Services.AddScoped<ILocationService, LocationService>();
         #endregion [Location]
 
         #region [Category]
+        builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
         builder.Services.AddScoped<ICategoryService, CategoryService>();
         #endregion [Category]
 
         #region [Element]
+        builder.Services.AddScoped<IElementRepository, ElementRepository>();
         builder.Services.AddScoped<IElementService, ElementService>();
         #endregion [Element]
 
         #region [Monster]
+        builder.Services.AddScoped<IMonsterRepository, MonsterRepository>();
         builder.Services.AddScoped<IMonsterService, MonsterService>();
         #endregion [Monster]
 
         #region [Attempt]
+        builder.Services.AddScoped<IAttemptRepository, AttemptRepository>();
         builder.Services.AddScoped<IAttemptService, AttemptService>();
         #endregion [Attempt]
 
         #region [User]
+        builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<ITokenService, TokenService>();
         #endregion [User]
 
         #region [Leaderboard]
+        builder.Services.AddScoped<ILeaderboardRepository, LeaderboardRepository>();
         builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
         #endregion [Leaderboard]
+
+        #region [Chat]
+        builder.Services.AddScoped<IChatRepository, ChatRepository>();
+        builder.Services.AddSingleton<ChatRateLimiter>();
+        #endregion [Chat]
 
         builder.Services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                options.UseSecurityTokenValidators = true; // use JwtSecurityTokenHandler with claim-type mapping
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -121,7 +138,7 @@ public class Program
                     {
                         var accessToken = context.Request.Query["access_token"].FirstOrDefault();
                         var path = context.HttpContext.Request.Path;
-                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/chatHub"))
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/api/chatHub"))
                         {
                             context.Token = accessToken;
                         }

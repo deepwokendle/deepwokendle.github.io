@@ -133,12 +133,71 @@ namespace DeepwokendleApi.Controllers
 
         [Authorize]
         [HttpGet("infinite-monster")]
-        public async Task<IActionResult> GetInfiniteMonster(string username)
+        public async Task<IActionResult> GetInfiniteMonster()
         {
             try
             {
-                int? monsterId = await _monsterService.GetInfiniteMonsterAsync(username);
-                return Ok(monsterId);
+                var username = User.Identity?.Name;
+                await _monsterService.GetInfiniteMonsterAsync(username);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin-list")]
+        public async Task<IActionResult> GetAllMonstersAdmin()
+        {
+            try
+            {
+                var monsters = (await _monsterService.GetAllMonstersAdminAsync()).ToList();
+                if (!monsters.Any()) return Ok(new List<Monster>());
+                var elementIds = monsters.Select(m => m.ElementId).Distinct().ToList();
+                var categoryIds = monsters.Select(m => m.CategoryId).Distinct().ToList();
+                var elements = await _elementService.GetElementsByIdsAsync(elementIds);
+                var categories = await _categoryService.GetCategoriesByIdAsync(categoryIds);
+                foreach (var monster in monsters)
+                {
+                    monster.Element = elements.FirstOrDefault(e => e.Id == monster.ElementId);
+                    monster.Category = categories.FirstOrDefault(c => c.Id == monster.CategoryId);
+                }
+                return Ok(monsters);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("{id}/enriched")]
+        public async Task<IActionResult> GetMonsterEnriched(int id)
+        {
+            try
+            {
+                var monster = await _monsterService.GetEnrichedMonsterAsync(id);
+                if (monster == null) return NotFound();
+                return Ok(monster);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("admin-create")]
+        public async Task<IActionResult> AdminCreateMonster([FromBody] MonsterCommand dto)
+        {
+            try
+            {
+                var username = User.Identity?.Name;
+                var id = await _monsterService.AdminCreateMonsterAsync(dto, username);
+                await _monsterService.InsertMonsterRelationsAsync(id, dto.LocationsId ?? new List<int>(), dto.LootsId ?? new List<int>());
+                return CreatedAtAction(nameof(GetMonsterById), new { id }, new { id });
             }
             catch (Exception ex)
             {
@@ -153,6 +212,23 @@ namespace DeepwokendleApi.Controllers
             try
             {
                 await _monsterService.UpdateMonsterAsync(id, dto);
+                await _monsterService.UpdateMonsterRelationsAsync(id, dto.LocationsId ?? new List<int>(), dto.LootsId ?? new List<int>());
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("bulk")]
+        public async Task<IActionResult> DeleteMonsters([FromBody] List<int> ids)
+        {
+            try
+            {
+                if (ids == null || ids.Count == 0) return BadRequest("No IDs provided.");
+                await _monsterService.DeleteMonstersAsync(ids);
                 return NoContent();
             }
             catch (Exception ex)
@@ -168,6 +244,21 @@ namespace DeepwokendleApi.Controllers
             try
             {
                 await _monsterService.DeleteMonsterAsync(id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPatch("{id}/publish")]
+        public async Task<IActionResult> PublishMonster(int id)
+        {
+            try
+            {
+                await _monsterService.PublishMonsterAsync(id);
                 return NoContent();
             }
             catch (Exception ex)

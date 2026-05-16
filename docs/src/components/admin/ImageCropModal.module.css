@@ -1,0 +1,82 @@
+.overlay {
+    z-index: 1100; /* above the form modal */
+}
+
+.cropModal {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: radial-gradient(#18221a, #04100d);
+    padding: 24px 28px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 520px;
+    color: var(--container-background);
+}
+
+.title {
+    color: var(--container-background);
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.hint {
+    font-size: 0.78rem;
+    opacity: 0.6;
+    margin: -8px 0 0;
+}
+
+/* The crop canvas area */
+.cropArea {
+    position: relative;
+    width: 100%;
+    height: 360px;
+    background: #000;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* Zoom slider row */
+.zoomRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+}
+
+.zoomSlider {
+    flex: 1;
+    accent-color: var(--container-background);
+    cursor: pointer;
+    height: 4px;
+}
+
+.actions {
+    margin-top: 4px;
+    justify-content: flex-end !important;
+}
+
+/* react-easy-crop overrides */
+:global(.reactEasyCrop_Container) {
+    border-radius: 6px;
+}
+
+:global(.reactEasyCrop_CropArea) {
+    border-color: rgba(216, 215, 202, 0.8) !important;
+    box-shadow: 0 0 0 9999em rgba(0, 0, 0, 0.6) !important;
+}
+
+:global(.reactEasyCrop_Grid::before),
+:global(.reactEasyCrop_Grid::after) {
+    border-color: rgba(216, 215, 202, 0.25) !important;
+}
+
+@media (max-width: 480px) {
+    .cropArea {
+        height: 260px;
+    }
+
+    .cropModal {
+        padding: 16px;
+    }
+}

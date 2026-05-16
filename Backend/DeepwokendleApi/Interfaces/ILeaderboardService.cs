@@ -6,5 +6,6 @@ namespace DeepwokendleApi.Interfaces
     public interface ILeaderboardService
     {
         Task<List<LeaderboardQuery>> GetLeaderboardAsync();
+        Task<List<MonthlyLeaderboardQuery>> GetMonthlyLeaderboardAsync();
     }
 }

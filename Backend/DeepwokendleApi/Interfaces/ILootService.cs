@@ -9,5 +9,7 @@ namespace DeepwokendleApi.Interfaces
         Task<IEnumerable<MonsterLoot>> GetAllMonsterLoot();
         Task<IEnumerable<string>> GetLootsByMonsterIdAsync(int monsterId);
         Task RemoveLootFromMonsterAsync(int monsterId, int lootId);
+        Task<Loot> CreateLootAsync(string name);
+        Task DeleteLootAsync(int id);
     }
 }

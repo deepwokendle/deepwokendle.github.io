@@ -6,6 +6,7 @@ public class Monster
     public string Picture { get; set; }
     public string MainHabitat { get; set; }
     public bool Humanoid { get; set; }
+    public bool Pending { get; set; }
     public int ElementId { get; set; }
     public Element Element { get; set; }
     public int CategoryId { get; set; }

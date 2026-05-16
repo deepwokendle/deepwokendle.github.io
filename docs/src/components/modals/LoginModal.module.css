@@ -1,0 +1,181 @@
+.card {
+  background: var(--container-background);
+  padding: 2rem 2.2rem 1.6rem;
+  border-radius: 8px;
+  max-width: 340px;
+  width: 90%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 0 28px rgba(0, 0, 0, 0.55);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.75rem;
+  background: none;
+  color: #8a2020;
+  font-size: 0.95rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 2px 5px;
+  transition: transform 180ms, color 180ms;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+.closeBtn:hover {
+  transform: scale(1.18);
+  color: #c02828;
+}
+
+.heading {
+  color: #04100d;
+  font-size: 1.35rem;
+  letter-spacing: 2px;
+  margin-bottom: 0.25rem;
+  text-align: center;
+}
+
+.divider {
+  width: 50%;
+  height: 1px;
+  background: rgba(4, 16, 13, 0.18);
+  margin: 0.55rem auto 1.1rem;
+}
+
+.field {
+  width: 100%;
+  position: relative;
+  margin-bottom: 0.85rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  background: rgba(4, 16, 13, 0.07);
+  color: #04100d;
+  font-family: 'Fondamento';
+  font-size: 0.9rem;
+  border-radius: 4px;
+  transition: background 200ms;
+}
+
+.inputPadRight {
+  padding-right: 2.4rem;
+}
+
+.input:focus {
+  background: rgba(4, 16, 13, 0.13);
+}
+
+.input::placeholder {
+  color: rgba(4, 16, 13, 0.38);
+}
+
+.eyeIcon {
+  position: absolute;
+  right: 0.7rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(4, 16, 13, 0.42);
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: color 150ms;
+}
+
+.eyeIcon:hover {
+  color: rgba(4, 16, 13, 0.82);
+}
+
+.btnRow {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.switchLink {
+  color: rgba(4, 16, 13, 0.52);
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+  text-align: center;
+  width: fit-content;
+  margin: 0 auto;
+  position: relative;
+  transition: color 200ms;
+}
+
+.switchLink::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: rgba(4, 16, 13, 0.52);
+  transition: width 0.25s ease;
+}
+
+.switchLink:hover {
+  color: #04100d;
+}
+
+.switchLink:hover::after {
+  width: 100%;
+}
+
+/* Logged-in state */
+.profileWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0 0.5rem;
+  width: 100%;
+}
+
+.profileIcon {
+  font-size: 2.6rem;
+  color: #04100d;
+  opacity: 0.6;
+}
+
+.profileName {
+  font-size: 1.05rem;
+  color: #04100d;
+  letter-spacing: 1.5px;
+}
+
+.logoutLink {
+  color: rgba(4, 16, 13, 0.5);
+  cursor: pointer;
+  font-size: 0.82rem;
+  text-decoration: none;
+  position: relative;
+  transition: color 200ms;
+}
+
+.logoutLink::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: rgba(4, 16, 13, 0.5);
+  transition: width 0.25s ease;
+}
+
+.logoutLink:hover {
+  color: #04100d;
+}
+
+.logoutLink:hover::after {
+  width: 100%;
+}

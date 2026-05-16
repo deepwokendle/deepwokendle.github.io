@@ -1,148 +1,91 @@
-﻿using Dapper;
 using DeepwokendleApi.Commands;
-using DeepwokendleApi.DTOS;
 using DeepwokendleApi.Interfaces;
 using DeepwokendleApi.Models;
-using Npgsql;
-using System.Text;
 
 public class MonsterService : IMonsterService
 {
-    private readonly IConfiguration _configuration;
+    private readonly IMonsterRepository _monsterRepository;
 
-    public MonsterService(IConfiguration configuration)
+    public MonsterService(IMonsterRepository monsterRepository)
     {
-        _configuration = configuration;
+        _monsterRepository = monsterRepository;
     }
 
-    public async Task<int> CreateMonsterAsync(MonsterCommand monsterCommand, string username)
-    {
-        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        const string sql = @"
-            INSERT INTO monster
-                (name, picture, mainhabitat, humanoid, elementid, categoryid, pending, useratcreation)
-            VALUES
-                (@Name, @Picture, 'Test', @Humanoid, @ElementId, @CategoryId, true, @username)
-            RETURNING id;
-        ";
-        return await conn.ExecuteScalarAsync<int>(sql, new
-        {
-            monsterCommand.Name,
-            monsterCommand.Picture,
-            monsterCommand.Humanoid,
-            monsterCommand.ElementId,
-            monsterCommand.CategoryId,
-            username
-        });
-    }
+    public Task<int> CreateMonsterAsync(MonsterCommand monsterCommand, string username)
+        => _monsterRepository.CreateMonsterAsync(monsterCommand, username);
 
-    public async Task InsertMonsterRelationsAsync(int monsterId, List<int> locationsId, List<int> lootsId)
-    {
-        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        var sqlBuilder = new StringBuilder();
+    public Task InsertMonsterRelationsAsync(int monsterId, List<int> locationsId, List<int> lootsId)
+        => _monsterRepository.InsertMonsterRelationsAsync(monsterId, locationsId, lootsId);
 
-        if (locationsId?.Count > 0)
-        {
-            sqlBuilder.AppendLine("INSERT INTO monster_location (monsterid, locationid) VALUES");
-            sqlBuilder.AppendLine(string.Join(", ", locationsId.Select(id => $"({monsterId}, {id})")));
-            sqlBuilder.AppendLine(";");
-        }
+    public Task<IEnumerable<Monster>> GetAllMonstersAsync()
+        => _monsterRepository.GetAllMonstersAsync();
 
-        if (lootsId?.Count > 0)
-        {
-            sqlBuilder.AppendLine("INSERT INTO monster_loot (monsterid, lootid) VALUES");
-            sqlBuilder.AppendLine(string.Join(", ", lootsId.Select(id => $"({monsterId}, {id})")));
-            sqlBuilder.AppendLine(";");
-        }
-
-        var sql = sqlBuilder.ToString();
-        await conn.ExecuteAsync(sql);
-    }
-
-    public async Task<IEnumerable<Monster>> GetAllMonstersAsync()
-    {
-        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        const string sql = "SELECT id, name, picture, mainhabitat AS MainHabitat, humanoid, elementid AS ElementId, categoryid AS CategoryId FROM monster where pending = false";
-        return await conn.QueryAsync<Monster>(sql);
-    }
-
-    public async Task<Monster> GetMonsterByIdAsync(int id)
-    {
-        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        const string sql = @"
-            SELECT id, name, picture, mainhabitat AS MainHabitat, humanoid, elementid AS ElementId, categoryid AS CategoryId
-            FROM monster
-            WHERE id = @Id;
-        ";
-        return await conn.QueryFirstOrDefaultAsync<Monster>(sql, new { Id = id });
-    }
+    public Task<Monster> GetMonsterByIdAsync(int id)
+        => _monsterRepository.GetMonsterByIdAsync(id);
 
     public async Task<object> GetDailyMonsterAsync()
     {
-        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        await conn.OpenAsync();
         var today = DateTime.UtcNow.Date;
-        const string selectSql = "SELECT monster_id FROM daily_monster WHERE created_at = @Today;";
-        int? monsterId = await conn.QueryFirstOrDefaultAsync<int?>(selectSql, new { Today = today });
+        var monsterId = await _monsterRepository.GetDailyMonsterIdAsync(today);
 
         if (monsterId == null)
         {
-            const string randomSql = "SELECT id FROM monster WHERE PENDING IS FALSE ORDER BY RANDOM() LIMIT 1;";
-            monsterId = await conn.QueryFirstAsync<int>(randomSql);
-            const string insertSql = "INSERT INTO daily_monster (created_at, monster_id) VALUES (@Today, @MonsterId);";
-            await conn.ExecuteAsync(insertSql, new { Today = today, MonsterId = monsterId });
+            monsterId = await _monsterRepository.GetRandomMonsterIdAsync();
+            await _monsterRepository.InsertDailyMonsterAsync(today, monsterId.Value);
         }
 
-        var nextResetUtc = today.AddDays(1);
-
-        return new
-        {
-            monsterId,
-            nextResetUtc = nextResetUtc.ToString("o")
-        };
+        return new { nextResetUtc = today.AddDays(1).ToString("o") };
     }
 
     public async Task<int?> GetInfiniteMonsterAsync(string username)
     {
-        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        await conn.OpenAsync();
-        var today = DateTime.UtcNow.Date;
-        const string selectSql = "SELECT monster_id FROM generated_monster WHERE user_at_creation = @Username and completed = false;";
-        int? monsterId = await conn.QueryFirstOrDefaultAsync<int?>(selectSql, new { Username = username});
+        var monsterId = await _monsterRepository.GetIncompleteGeneratedMonsterIdByUserAsync(username);
 
         if (monsterId == null)
         {
-            const string randomSql = "SELECT id FROM monster where pending = false ORDER BY RANDOM() LIMIT 1;";
-            monsterId = await conn.QueryFirstAsync<int>(randomSql);
-            const string insertSql = "INSERT INTO generated_monster (user_at_creation, monster_id, completed) VALUES (@Username, @MonsterId, false);";
-            await conn.ExecuteAsync(insertSql, new { Username = username, MonsterId = monsterId });
+            monsterId = await _monsterRepository.GetRandomMonsterIdAsync();
+            await _monsterRepository.InsertGeneratedMonsterAsync(username, monsterId.Value);
         }
 
         return monsterId;
     }
 
-    public async Task UpdateMonsterAsync(int id, MonsterCommand monsterCommand)
+    public Task<Monster> GetEnrichedMonsterAsync(int id)
+        => _monsterRepository.GetEnrichedMonsterAsync(id);
+
+    public async Task<int?> GetCurrentDailyMonsterIdAsync()
     {
-        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        const string sql = @"
-            UPDATE monster
-            SET
-                name = @Name,
-                picture = @Picture,
-                mainhabitat = @MainHabitat,
-                humanoid = @Humanoid,
-                elementid = @ElementId,
-                categoryid = @CategoryId
-            WHERE id = @Id;
-        ";
-        monsterCommand.Id = id;
-        await conn.ExecuteAsync(sql, monsterCommand);
+        var today = DateTime.UtcNow.Date;
+        var monsterId = await _monsterRepository.GetDailyMonsterIdAsync(today);
+        if (monsterId == null)
+        {
+            monsterId = await _monsterRepository.GetRandomMonsterIdAsync();
+            await _monsterRepository.InsertDailyMonsterAsync(today, monsterId.Value);
+        }
+        return monsterId;
     }
 
-    public async Task DeleteMonsterAsync(int id)
-    {
-        using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        const string sql = "DELETE FROM monster WHERE id = @Id;";
-        await conn.ExecuteAsync(sql, new { Id = id });
-    }
+    public Task<int?> GetInfiniteMonsterIdForUserAsync(string username)
+        => _monsterRepository.GetIncompleteGeneratedMonsterIdByUserAsync(username);
+
+    public Task UpdateMonsterAsync(int id, MonsterCommand monsterCommand)
+        => _monsterRepository.UpdateMonsterAsync(id, monsterCommand);
+
+    public Task UpdateMonsterRelationsAsync(int monsterId, List<int> locationsId, List<int> lootsId)
+        => _monsterRepository.UpdateMonsterRelationsAsync(monsterId, locationsId, lootsId);
+
+    public Task DeleteMonsterAsync(int id)
+        => _monsterRepository.DeleteMonsterAsync(id);
+
+    public Task DeleteMonstersAsync(List<int> ids)
+        => _monsterRepository.DeleteMonstersAsync(ids);
+
+    public Task<IEnumerable<Monster>> GetAllMonstersAdminAsync()
+        => _monsterRepository.GetAllMonstersAdminAsync();
+
+    public Task<int> AdminCreateMonsterAsync(MonsterCommand dto, string username)
+        => _monsterRepository.AdminCreateMonsterAsync(dto, username);
+
+    public Task PublishMonsterAsync(int id)
+        => _monsterRepository.PublishMonsterAsync(id);
 }

@@ -20,7 +20,8 @@ public class AuthController : ControllerBase
     {
         if (await _userService.UserExists(dto.Username))
             return BadRequest("User already exists.");
-
+        if (string.IsNullOrEmpty(dto.Username) || string.IsNullOrEmpty(dto.Password))
+            return BadRequest("Fill all the required fields.");
         var result = await _userService.CreateUser(dto.Username, dto.Password);
         return Ok(result);
     }
@@ -31,7 +32,7 @@ public class AuthController : ControllerBase
         var user = await _userService.GetByUsername(dto.Username);
         if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Unauthorized("Invalid Credentials.");
-
+        user.PasswordHash = null;
         var token = _tokenService.GenerateToken(user);
         return Ok(new { token, user });
     }

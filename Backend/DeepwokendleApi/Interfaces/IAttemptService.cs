@@ -13,5 +13,7 @@ namespace DeepwokendleApi.Interfaces
         Task<bool> UpdateIfCorrect(string user, int monsterId);
         Task UpdateUserStreak(string user);
         Task UpdateUserCurrStreak(string user);
+        Task<List<int>> GetCorrectlyGuessedMonsterIdsAsync(string username);
+        Task<MonsterStatsQuery> GetMonsterStatsAsync(string username, int monsterId);
     }
 }

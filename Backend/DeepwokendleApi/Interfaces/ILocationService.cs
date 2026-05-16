@@ -9,5 +9,7 @@ namespace DeepwokendleApi.Interfaces
         Task<IEnumerable<Location>> GetAllLocations();
         Task<IEnumerable<MonsterLocation>> GetAllMonsterLocation();
         Task RemoveLocationsFromMonsterAsync(int monsterId, int locationId);
+        Task<Location> CreateLocationAsync(string name);
+        Task DeleteLocationAsync(int id);
     }
 }
