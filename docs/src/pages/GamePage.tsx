@@ -7,6 +7,7 @@ import GameBoard from '../components/game/GameBoard';
 import LoginModal from '../components/modals/LoginModal';
 import SuggestMonsterModal from '../components/modals/SuggestMonsterModal';
 import LoadingOverlay from '../components/common/LoadingOverlay';
+import GameSkeleton from '../components/common/GameSkeleton';
 import Footer from '../components/common/Footer';
 import Fab from '../components/common/Fab';
 import MiniSharko from '../components/common/MiniSharko';
@@ -19,7 +20,7 @@ import type { GameMode } from '../types';
 export default function GamePage() {
   const { waitForLogin } = useAuth();
   const navigate = useNavigate();
-  const { monsters, loadMonsters, isLoadingMonsters } = useMonsters();
+  const { monsters, loadMonsters } = useMonsters();
   const { messages, sendMessage, loadOlderMessages, hasMoreHistory } = useSignalR();
   const {
     randomCharacter, guesses, amountsGuessed, infiniteStreak,
@@ -100,11 +101,9 @@ export default function GamePage() {
     guessCharacter(monsterId, monsters, currentMode);
   };
 
-  const loading = isLoading || isLoadingMonsters;
-
   return (
     <>
-      <LoadingOverlay visible={loading} />
+      <LoadingOverlay visible={isLoading && !!monsters} />
 
       <div id="overlay" />
 
@@ -132,7 +131,7 @@ export default function GamePage() {
         <div className="ad-side" />
         <section id="mainGame">
           <div id="container" className="border">
-            {monsters && (
+            {monsters ? (
               <GameBoard
                 mode={currentMode}
                 guesses={guesses}
@@ -147,6 +146,8 @@ export default function GamePage() {
                 onGuess={handleGuess}
                 onInitInfinite={startInfiniteMode}
               />
+            ) : (
+              <GameSkeleton />
             )}
           </div>
         </section>

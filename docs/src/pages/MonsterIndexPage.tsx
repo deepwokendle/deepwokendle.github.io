@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Sidebar from '../components/sidebar/Sidebar';
 import LoginModal from '../components/modals/LoginModal';
-import LoadingOverlay from '../components/common/LoadingOverlay';
 import GuessRow from '../components/game/GuessRow';
 import { useMonsters } from '../hooks/useMonsters';
 import { useAuth } from '../context/AuthContext';
@@ -136,7 +135,6 @@ export default function MonsterIndexPage() {
 
   return (
     <>
-      <LoadingOverlay visible={isLoadingMonsters} />
       <div id="overlay" />
 
       <Header onHamburgerClick={() => setSidebarOpen(o => !o)} />
@@ -170,45 +168,54 @@ export default function MonsterIndexPage() {
           </select>
         </div>
 
-        {!isLoadingMonsters && filtered.length === 0 && (
-          <p className="monster-index-empty">No monsters found.</p>
+        {isLoadingMonsters ? (
+          <div className="monster-grid">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="monster-card skeleton-pulse skeleton-monster-card border" />
+            ))}
+          </div>
+        ) : (
+          <>
+            {filtered.length === 0 && (
+              <p className="monster-index-empty">No monsters found.</p>
+            )}
+            <div className="monster-grid">
+              {pageMonsters.map(monster => {
+                const unlocked = guessedIds.has(monster.id);
+                return (
+                  <div
+                    key={monster.id}
+                    className={`monster-card border${unlocked ? ' unlocked' : ' locked'}`}
+                    onClick={() => handleCardClick(monster)}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={unlocked ? `View ${monster.name}` : `${monster.name} – locked`}
+                  >
+                    {unlocked
+                      ? <img src={monster.picture} alt={monster.name} className="monster-card-img" />
+                      : <div className="monster-card-locked"><span className="question-mark">?</span></div>
+                    }
+                    <span className="monster-card-name">{monster.name}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="monster-pagination">
+              <button
+                className="btn"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >←</button>
+              <span className="monster-pagination-info">{page} / {totalPages}</span>
+              <button
+                className="btn"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >→</button>
+            </div>
+          </>
         )}
-
-        <div className="monster-grid">
-          {pageMonsters.map(monster => {
-            const unlocked = guessedIds.has(monster.id);
-            return (
-              <div
-                key={monster.id}
-                className={`monster-card border${unlocked ? ' unlocked' : ' locked'}`}
-                onClick={() => handleCardClick(monster)}
-                role="button"
-                tabIndex={0}
-                aria-label={unlocked ? `View ${monster.name}` : `${monster.name} – locked`}
-              >
-                {unlocked
-                  ? <img src={monster.picture} alt={monster.name} className="monster-card-img" />
-                  : <div className="monster-card-locked"><span className="question-mark">?</span></div>
-                }
-                <span className="monster-card-name">{monster.name}</span>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="monster-pagination">
-          <button
-            className="btn"
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-          >←</button>
-          <span className="monster-pagination-info">{page} / {totalPages}</span>
-          <button
-            className="btn"
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-          >→</button>
-        </div>
       </main>
 
       {previewMonster && (
