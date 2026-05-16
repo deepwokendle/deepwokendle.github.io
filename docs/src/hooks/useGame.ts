@@ -34,6 +34,7 @@ export function useGame() {
   const [alreadyGuessed, setAlreadyGuessed] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
   const [isAwaitingNext, setIsAwaitingNext] = useState(false);
+  const [infiniteResult, setInfiniteResult] = useState<'won' | 'lost' | null>(null);
 
   const setCharacter = (m: Monster | null) => setRandomCharacter(m);
   const setStreak = (v: number) => { streakRef.current = v; setInfiniteStreak(v); };
@@ -49,6 +50,7 @@ export function useGame() {
     setDisabled(false);
     setAwaiting(false);
     setCharacter(null);
+    setInfiniteResult(null);
 
     try {
       const res = await apiFetchDailyMonster();
@@ -86,6 +88,7 @@ export function useGame() {
     setAwaiting(false);
     setAlreadyGuessed(false);
     setCharacter(null);
+    setInfiniteResult(null);
 
     try {
       const [monsterRes, streakRes] = await Promise.all([
@@ -190,6 +193,7 @@ export function useGame() {
           if (goNext) {
             window.dispatchEvent(new CustomEvent('game:initInfinite'));
           } else {
+            setInfiniteResult('won');
             setDisabled(true);
             setAwaiting(false);
           }
@@ -210,6 +214,7 @@ export function useGame() {
         if (tryAgain) {
           window.dispatchEvent(new CustomEvent('game:initInfinite'));
         } else {
+          setInfiniteResult('lost');
           setDisabled(true);
           setAwaiting(false);
         }
@@ -228,6 +233,7 @@ export function useGame() {
     alreadyGuessed,
     isDisabled,
     isAwaitingNext,
+    infiniteResult,
     initNormalMode,
     initInfiniteMode,
     guessCharacter,
