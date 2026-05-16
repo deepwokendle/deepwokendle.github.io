@@ -95,7 +95,7 @@ export default function GamePage() {
     if (!messages.length) return;
     const lastMsg = messages[messages.length - 1];
     const lastId = lastMsg.id ?? `${lastMsg.user}|${lastMsg.message}`;
-    if (prevLastMessageIdRef.current !== undefined && lastId !== prevLastMessageIdRef.current && !chatOpenRef.current) {
+    if (prevLastMessageIdRef.current !== undefined && lastId !== prevLastMessageIdRef.current && !chatOpenRef.current && !lastMsg.isSystem) {
       setUnreadCount(prev => prev + 1);
     }
     prevLastMessageIdRef.current = lastId;
