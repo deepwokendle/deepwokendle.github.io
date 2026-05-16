@@ -125,7 +125,7 @@ export default function MonsterIndexPage() {
 
   const handleCardClick = (monster: Monster) => {
     if (!guessedIds.has(monster.id)) {
-      showToast.info(isLoggedIn ? 'Login and guess this character in Normal/Infinite mode to unlock it here!' : 'Guess this character in Normal or Infinite mode to unlock it here!');
+      showToast.info(isLoggedIn ? 'Guess this character in Normal or Infinite mode to unlock it here!' : 'Login and guess this character in Normal/Infinite mode to unlock it here!');
       return;
     }
     setPreviewMonster(monster);

@@ -916,7 +916,7 @@ input:focus {
     position: fixed;
     right: -70%;
     top: 0;
-    max-width: 400px;
+    max-width: 430px;
     width: 60%;
     height: 100%;
     padding: 2px;
@@ -939,7 +939,7 @@ input:focus {
 }
 
 #chat {
-    max-height: 655px;
+    max-height: 820px;
     overflow: auto;
     height: 100%;
     padding-right: 8px;
@@ -961,7 +961,7 @@ input:focus {
 }
 
 .chat-msg p {
-    word-break: break-all;
+    word-break: break-word;
     margin: 0;
 }
 
@@ -1039,9 +1039,6 @@ input:focus {
     opacity:1;
 }
 
-#messagesContainer {
-    height: 590px;
-}
 
 #message {
     padding: 15px 5px 2px;

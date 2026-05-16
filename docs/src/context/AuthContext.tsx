@@ -104,9 +104,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return new Promise<void>((resolve, reject) => {
       pendingResolver.current = resolve;
       pendingRejector.current = reject;
-      openLoginModal(true);
     });
-  }, [openLoginModal]);
+  }, []);
 
   setUnauthorizedHandler(async () => {
     const hasToken = !!localStorage.getItem('token');
