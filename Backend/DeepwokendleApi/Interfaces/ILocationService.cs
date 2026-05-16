@@ -11,5 +11,7 @@ namespace DeepwokendleApi.Interfaces
         Task RemoveLocationsFromMonsterAsync(int monsterId, int locationId);
         Task<Location> CreateLocationAsync(string name);
         Task DeleteLocationAsync(int id);
+        Task<IEnumerable<Location>> GetPlayerLocationOptionsAsync(string username);
+        Task<Location> CreatePlayerLocationAsync(string name, string username);
     }
 }

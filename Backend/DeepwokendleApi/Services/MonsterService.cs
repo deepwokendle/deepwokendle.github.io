@@ -88,4 +88,31 @@ public class MonsterService : IMonsterService
 
     public Task PublishMonsterAsync(int id)
         => _monsterRepository.PublishMonsterAsync(id);
+
+    public Task<(IEnumerable<MonsterSuggestion> Items, int Total)> GetPendingSuggestionsAsync(int page, int pageSize, string sort, string username, string search = "")
+        => _monsterRepository.GetPendingSuggestionsAsync(page, pageSize, sort, username, search);
+
+    public Task<IEnumerable<MonsterSuggestion>> GetUserSuggestionsAsync(string username)
+        => _monsterRepository.GetUserSuggestionsAsync(username);
+
+    public Task SetMonsterVoteAsync(int monsterId, string username, int vote)
+        => _monsterRepository.SetMonsterVoteAsync(monsterId, username, vote);
+
+    public Task RemoveMonsterVoteAsync(int monsterId, string username)
+        => _monsterRepository.RemoveMonsterVoteAsync(monsterId, username);
+
+    public Task ReportMonsterAsync(int monsterId, string username)
+        => _monsterRepository.ReportMonsterAsync(monsterId, username);
+
+    public Task<int> CreateUserSuggestionAsync(MonsterCommand cmd, string username)
+        => _monsterRepository.CreateUserSuggestionAsync(cmd, username);
+
+    public Task<bool> UpdateUserSuggestionAsync(int id, MonsterCommand cmd, string username)
+        => _monsterRepository.UpdateUserSuggestionAsync(id, cmd, username);
+
+    public Task<bool> DeleteUserSuggestionAsync(int id, string username)
+        => _monsterRepository.DeleteUserSuggestionAsync(id, username);
+
+    public Task<Monster?> GetUserSuggestionEnrichedAsync(int id, string username)
+        => _monsterRepository.GetUserSuggestionEnrichedAsync(id, username);
 }

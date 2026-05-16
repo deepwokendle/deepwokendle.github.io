@@ -391,5 +391,111 @@ namespace DeepwokendleApi.Controllers
 
         //    return Ok(dtos);
         //}
+
+        [HttpGet("suggestions")]
+        public async Task<IActionResult> GetSuggestions(
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10,
+            [FromQuery] string sort = "likes",
+            [FromQuery] string search = "")
+        {
+            var username = User.Identity?.Name ?? string.Empty;
+            var (items, total) = await _monsterService.GetPendingSuggestionsAsync(page, pageSize, sort, username, search);
+            return Ok(new { items, total });
+        }
+
+        [HttpPost("{id}/vote")]
+        [Authorize]
+        public async Task<IActionResult> Vote(int id, [FromBody] MonsterVoteRequest req)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(username)) return Unauthorized();
+            if (req.Vote == 0)
+                await _monsterService.RemoveMonsterVoteAsync(id, username);
+            else if (req.Vote == 1 || req.Vote == -1)
+                await _monsterService.SetMonsterVoteAsync(id, username, req.Vote);
+            else
+                return BadRequest("Vote must be 1, -1, or 0.");
+            return NoContent();
+        }
+
+        [HttpPost("{id}/report")]
+        [Authorize]
+        public async Task<IActionResult> Report(int id)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(username)) return Unauthorized();
+            await _monsterService.ReportMonsterAsync(id, username);
+            return NoContent();
+        }
+
+        [HttpGet("my-suggestions")]
+        [Authorize]
+        public async Task<IActionResult> GetMySuggestions()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(username)) return Unauthorized();
+            var items = await _monsterService.GetUserSuggestionsAsync(username);
+            return Ok(items);
+        }
+
+        [HttpGet("{id}/my-suggestion-enriched")]
+        [Authorize]
+        public async Task<IActionResult> GetMySuggestionEnriched(int id)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(username)) return Unauthorized();
+            var monster = await _monsterService.GetUserSuggestionEnrichedAsync(id, username);
+            return monster != null ? Ok(monster) : NotFound();
+        }
+
+        [HttpPost("my-suggestion")]
+        [Authorize]
+        public async Task<IActionResult> CreateMySuggestion([FromBody] UserSuggestionBody body)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(username)) return Unauthorized();
+            var cmd = new MonsterCommand
+            {
+                Name = body.Name, Picture = body.Picture, Humanoid = body.Humanoid,
+                ElementId = body.ElementId, CategoryId = body.CategoryId,
+            };
+            var id = await _monsterService.CreateUserSuggestionAsync(cmd, username);
+            await _monsterService.InsertMonsterRelationsAsync(id, body.LocationsId ?? [], body.LootsId ?? []);
+            return Created($"/api/Monsters/{id}", new { id });
+        }
+
+        [HttpPut("{id}/my-suggestion")]
+        [Authorize]
+        public async Task<IActionResult> UpdateMySuggestion(int id, [FromBody] UserSuggestionBody body)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(username)) return Unauthorized();
+            var cmd = new MonsterCommand
+            {
+                Name = body.Name, Picture = body.Picture, Humanoid = body.Humanoid,
+                ElementId = body.ElementId, CategoryId = body.CategoryId,
+            };
+            var updated = await _monsterService.UpdateUserSuggestionAsync(id, cmd, username);
+            if (!updated) return NotFound();
+            await _monsterService.UpdateMonsterRelationsAsync(id, body.LocationsId ?? [], body.LootsId ?? []);
+            return NoContent();
+        }
+
+        [HttpDelete("{id}/my-suggestion")]
+        [Authorize]
+        public async Task<IActionResult> DeleteMySuggestion(int id)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(username)) return Unauthorized();
+            var deleted = await _monsterService.DeleteUserSuggestionAsync(id, username);
+            return deleted ? NoContent() : NotFound();
+        }
     }
 }
+
+public record MonsterVoteRequest(int Vote);
+public record UserSuggestionBody(
+    string Name, string Picture, bool Humanoid,
+    int ElementId, int CategoryId,
+    List<int>? LocationsId, List<int>? LootsId);

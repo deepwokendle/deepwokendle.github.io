@@ -86,6 +86,26 @@ export interface NamedOption {
   name: string;
 }
 
+export interface MonsterSuggestion {
+  id: number;
+  name: string;
+  picture: string;
+  humanoid: boolean;
+  pending: boolean;
+  userAtCreation: string;
+  createdAt: string;
+  element: string;
+  category: string;
+  loots: string[];
+  locations: string[];
+  likeCount: number;
+  dislikeCount: number;
+  userVote: number | null;
+  lastLikers: string[];
+  lastDislikers: string[];
+  updatedAt: string | null;
+}
+
 export type GameMode = 'normal' | 'infinite';
 export type MatchResult = 'correct' | 'partial' | 'wrong';
 

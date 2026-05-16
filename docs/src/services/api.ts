@@ -40,6 +40,13 @@ export const apiRegister = (username: string, password: string) =>
     body: JSON.stringify({ Username: username, Password: password }),
   });
 
+// Bypasses the unauthorized handler so a background refresh doesn't trigger the logout dialog
+export const apiRefreshToken = (currentToken: string): Promise<Response> =>
+  fetch(getApiUrl() + '/Auth/refresh', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${currentToken}` },
+  });
+
 export const apiFetchAllMonsters = () => apiFetch('/Monsters/getMonsters');
 export const apiFetchDailyMonster = () => apiFetch('/Monsters/daily-monster');
 export const apiFetchInfiniteMonster = () => apiFetch('/Monsters/infinite-monster');
@@ -69,6 +76,20 @@ export const apiFetchElements = () => apiFetch('/Elements/getElements');
 export const apiFetchCategories = () => apiFetch('/Categories/getCategories');
 export const apiFetchLoots = () => apiFetch('/Loots/getLoots');
 export const apiFetchLocations = () => apiFetch('/Locations/getLocations');
+export const apiFetchPlayerLoots = () => apiFetch('/Loots/player-options');
+export const apiFetchPlayerLocations = () => apiFetch('/Locations/player-options');
+export const apiPlayerCreateLoot = (name: string) =>
+  apiFetch('/Loots/player-create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
+export const apiPlayerCreateLocation = (name: string) =>
+  apiFetch('/Locations/player-create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name }),
+  });
 export const apiAdminCreateLoot = (name: string) =>
   apiFetch('/Loots/admin-create', {
     method: 'POST',
@@ -123,3 +144,40 @@ export const apiReportChatMessage = (externalId: string) =>
 
 export const apiGetChatMessages = (skip: number, take: number) =>
   apiFetch(`/Chat/messages?skip=${skip}&take=${take}`);
+
+// Monster Suggestions
+export const apiFetchMonsterSuggestions = (page: number, pageSize: number, sort: string, search = '') =>
+  apiFetch(`/Monsters/suggestions?page=${page}&pageSize=${pageSize}&sort=${encodeURIComponent(sort)}&search=${encodeURIComponent(search)}`);
+
+export const apiVoteMonsterSuggestion = (id: number, vote: number) =>
+  apiFetch(`/Monsters/${id}/vote`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ vote }),
+  });
+
+export const apiReportMonsterSuggestion = (id: number) =>
+  apiFetch(`/Monsters/${id}/report`, { method: 'POST' });
+
+export const apiFetchMyMonsterSuggestions = () =>
+  apiFetch('/Monsters/my-suggestions');
+
+export const apiGetMySuggestionEnriched = (id: number) =>
+  apiFetch(`/Monsters/${id}/my-suggestion-enriched`);
+
+export const apiCreateMySuggestion = (payload: object) =>
+  apiFetch('/Monsters/my-suggestion', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+export const apiUpdateMySuggestion = (id: number, payload: object) =>
+  apiFetch(`/Monsters/${id}/my-suggestion`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+export const apiDeleteMySuggestion = (id: number) =>
+  apiFetch(`/Monsters/${id}/my-suggestion`, { method: 'DELETE' });

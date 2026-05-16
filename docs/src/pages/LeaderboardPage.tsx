@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Header from '../components/layout/Header';
-import Sidebar from '../components/sidebar/Sidebar';
+import { useOverlaySync } from '../hooks/useOverlaySync';
 import type { LeaderboardEntry, MonthlyEntry } from '../types';
 import { apiFetchLeaderboard, apiFetchMonthlyLeaderboard, apiFetchDailyLeaderboard } from '../services/api';
 import styles from './LeaderboardPage.module.css';
@@ -47,16 +45,14 @@ function useLeaderboardCountdowns() {
 }
 
 export default function LeaderboardPage() {
-  const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  useOverlaySync();
+
   const [tab, setTab] = useState<Tab>('alltime');
   const [allTime, setAllTime] = useState<LeaderboardEntry[]>([]);
   const [monthly, setMonthly] = useState<MonthlyEntry[]>([]);
   const [daily, setDaily] = useState<MonthlyEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const countdowns = useLeaderboardCountdowns();
-
-  const goToGame = () => navigate('/');
 
   useEffect(() => {
     const loadAll = async () => {
@@ -81,142 +77,128 @@ export default function LeaderboardPage() {
   const monthLabel = `${MONTH_NAMES[now.getMonth()]} ${now.getFullYear()}`;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Header onHamburgerClick={() => setSidebarOpen(o => !o)} />
-      <div style={{ display: 'flex', flex: '1 1 0', minHeight: 0, position: 'relative' }}>
-        <Sidebar
-          open={sidebarOpen}
-          onNormalMode={goToGame}
-          onInfiniteMode={goToGame}
-          onSuggestNpc={goToGame}
-          onLeaderboard={() => { setSidebarOpen(false); }}
-          onMonsterIndex={() => { setSidebarOpen(false); navigate('/monsters'); }}
-          onAdminMonsters={() => { setSidebarOpen(false); navigate('/admin/monsters'); }}
-        />
-        <main className={styles.page}>
-          <h1 className={styles.title}>Leaderboard</h1>
+    <main className={styles.page}>
+      <h1 className={styles.title}>Leaderboard</h1>
 
-          <div className={styles.tabs}>
-            <button
-              className={`${styles.tab}${tab === 'alltime' ? ` ${styles.tabActive}` : ''}`}
-              onClick={() => setTab('alltime')}
-            >
-              All Time
-            </button>
-            <button
-              className={`${styles.tab}${tab === 'monthly' ? ` ${styles.tabActive}` : ''}`}
-              onClick={() => setTab('monthly')}
-            >
-              Monthly
-            </button>
-            <button
-              className={`${styles.tab}${tab === 'daily' ? ` ${styles.tabActive}` : ''}`}
-              onClick={() => setTab('daily')}
-            >
-              Daily
-            </button>
-          </div>
-
-          {tab === 'alltime' && <p className={styles.subtitle}>Ranked by highest streak ever.</p>}
-          {tab === 'monthly' && (
-            <p className={styles.subtitle}>
-              Infinite mode correct guesses — {monthLabel} — resets in{' '}
-              <span className={styles.countdown}>{countdowns.monthly}</span>
-            </p>
-          )}
-          {tab === 'daily' && (
-            <p className={styles.subtitle}>
-              Infinite mode correct guesses today — resets in{' '}
-              <span className={styles.countdown}>{countdowns.daily}</span>
-            </p>
-          )}
-
-          {loading ? (
-            <p className={styles.loading}>Loading…</p>
-          ) : tab === 'daily' ? (
-            daily.length === 0 ? (
-              <p className={styles.empty}>No entries for today yet.</p>
-            ) : (
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Player</th>
-                      <th style={{ textAlign: 'right' }}>Correct Guesses</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {daily.map(e => (
-                      <tr key={e.username}>
-                        <td className={placeClass(e.place, styles as unknown as Record<string, string>)}>
-                          {e.place}
-                        </td>
-                        <td>{e.username}</td>
-                        <td className={styles.score}>{e.score}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )
-          ) : tab === 'alltime' ? (
-            allTime.length === 0 ? (
-              <p className={styles.empty}>No entries yet.</p>
-            ) : (
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Player</th>
-                      <th style={{ textAlign: 'right' }}>Max Streak</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allTime.map(e => (
-                      <tr key={e.username}>
-                        <td className={placeClass(e.place, styles as unknown as Record<string, string>)}>
-                          {e.place}
-                        </td>
-                        <td>{e.username}</td>
-                        <td className={styles.score}>{e.maxStreak}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )
-          ) : (
-            monthly.length === 0 ? (
-              <p className={styles.empty}>No entries for this month yet.</p>
-            ) : (
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th>#</th>
-                      <th>Player</th>
-                      <th style={{ textAlign: 'right' }}>Correct Guesses</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {monthly.map(e => (
-                      <tr key={e.username}>
-                        <td className={placeClass(e.place, styles as unknown as Record<string, string>)}>
-                          {e.place}
-                        </td>
-                        <td>{e.username}</td>
-                        <td className={styles.score}>{e.score}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )
-          )}
-        </main>
+      <div className={styles.tabs}>
+        <button
+          className={`${styles.tab}${tab === 'alltime' ? ` ${styles.tabActive}` : ''}`}
+          onClick={() => setTab('alltime')}
+        >
+          All Time
+        </button>
+        <button
+          className={`${styles.tab}${tab === 'monthly' ? ` ${styles.tabActive}` : ''}`}
+          onClick={() => setTab('monthly')}
+        >
+          Monthly
+        </button>
+        <button
+          className={`${styles.tab}${tab === 'daily' ? ` ${styles.tabActive}` : ''}`}
+          onClick={() => setTab('daily')}
+        >
+          Daily
+        </button>
       </div>
-    </div>
+
+      {tab === 'alltime' && <p className={styles.subtitle}>Ranked by highest streak ever.</p>}
+      {tab === 'monthly' && (
+        <p className={styles.subtitle}>
+          Infinite mode correct guesses - {monthLabel} - resets in{' '}
+          <span className={styles.countdown}>{countdowns.monthly}</span>
+        </p>
+      )}
+      {tab === 'daily' && (
+        <p className={styles.subtitle}>
+          Infinite mode correct guesses today - resets in{' '}
+          <span className={styles.countdown}>{countdowns.daily}</span>
+        </p>
+      )}
+
+      {loading ? (
+        <p className={styles.loading}>Loading…</p>
+      ) : tab === 'daily' ? (
+        daily.length === 0 ? (
+          <p className={styles.empty}>No entries for today yet.</p>
+        ) : (
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Player</th>
+                  <th style={{ textAlign: 'right' }}>Correct Guesses</th>
+                </tr>
+              </thead>
+              <tbody>
+                {daily.map(e => (
+                  <tr key={e.username}>
+                    <td className={placeClass(e.place, styles as unknown as Record<string, string>)}>
+                      {e.place}
+                    </td>
+                    <td>{e.username}</td>
+                    <td className={styles.score}>{e.score}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      ) : tab === 'alltime' ? (
+        allTime.length === 0 ? (
+          <p className={styles.empty}>No entries yet.</p>
+        ) : (
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Player</th>
+                  <th style={{ textAlign: 'right' }}>Max Streak</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allTime.map(e => (
+                  <tr key={e.username}>
+                    <td className={placeClass(e.place, styles as unknown as Record<string, string>)}>
+                      {e.place}
+                    </td>
+                    <td>{e.username}</td>
+                    <td className={styles.score}>{e.maxStreak}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      ) : (
+        monthly.length === 0 ? (
+          <p className={styles.empty}>No entries for this month yet.</p>
+        ) : (
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Player</th>
+                  <th style={{ textAlign: 'right' }}>Correct Guesses</th>
+                </tr>
+              </thead>
+              <tbody>
+                {monthly.map(e => (
+                  <tr key={e.username}>
+                    <td className={placeClass(e.place, styles as unknown as Record<string, string>)}>
+                      {e.place}
+                    </td>
+                    <td>{e.username}</td>
+                    <td className={styles.score}>{e.score}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
+      )}
+    </main>
   );
 }

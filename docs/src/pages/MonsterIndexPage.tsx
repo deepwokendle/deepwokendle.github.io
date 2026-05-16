@@ -1,9 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Header from '../components/layout/Header';
-import Sidebar from '../components/sidebar/Sidebar';
-import LoginModal from '../components/modals/LoginModal';
 import GuessRow from '../components/game/GuessRow';
+import { useOverlaySync } from '../hooks/useOverlaySync';
 import { useMonsters } from '../hooks/useMonsters';
 import { useAuth } from '../context/AuthContext';
 import { apiFetchGuessedMonsters, apiFetchMonsterStats } from '../services/api';
@@ -34,11 +31,11 @@ function buildPreviewRecord(m: Monster): GuessRecord {
 }
 
 export default function MonsterIndexPage() {
-  const navigate = useNavigate();
   const { monsters, loadMonsters, isLoadingMonsters } = useMonsters();
   const { isLoggedIn } = useAuth();
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  useOverlaySync();
+
   const [guessedIds, setGuessedIds] = useState<Set<number>>(new Set());
   const [searchName, setSearchName] = useState('');
   const [filterElement, setFilterElement] = useState('');
@@ -86,19 +83,6 @@ export default function MonsterIndexPage() {
       .finally(() => setStatsLoading(false));
   }, [previewMonster, isLoggedIn]);
 
-  useEffect(() => {
-    const overlay = document.getElementById('overlay');
-    if (!overlay) return;
-    const handler = () => setSidebarOpen(false);
-    overlay.addEventListener('click', handler);
-    return () => overlay.removeEventListener('click', handler);
-  }, []);
-
-  useEffect(() => {
-    const overlay = document.getElementById('overlay');
-    if (overlay) overlay.classList.toggle('visible', sidebarOpen);
-  }, [sidebarOpen]);
-
   const elements = useMemo(
     () => [...new Set((monsters ?? []).map(m => nameOf(m.element)))].sort(),
     [monsters],
@@ -131,24 +115,8 @@ export default function MonsterIndexPage() {
     setPreviewMonster(monster);
   };
 
-  const goToGame = () => { setSidebarOpen(false); navigate('/'); };
-
   return (
     <>
-      <div id="overlay" />
-
-      <Header onHamburgerClick={() => setSidebarOpen(o => !o)} />
-
-      <Sidebar
-        open={sidebarOpen}
-        onNormalMode={goToGame}
-        onInfiniteMode={goToGame}
-        onSuggestNpc={goToGame}
-        onLeaderboard={() => { setSidebarOpen(false); navigate('/leaderboard'); }}
-        onMonsterIndex={() => setSidebarOpen(false)}
-        onAdminMonsters={() => { setSidebarOpen(false); navigate('/admin/monsters'); }}
-      />
-
       <main id="monster-index">
         <div className="monster-filters">
           <input
@@ -260,8 +228,6 @@ export default function MonsterIndexPage() {
           </div>
         </div>
       )}
-
-      <LoginModal />
     </>
   );
 }

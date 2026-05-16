@@ -65,5 +65,33 @@ namespace DeepwokendleApi.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("player-options")]
+        [Authorize]
+        public async Task<IActionResult> GetPlayerOptions()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(username)) return Unauthorized();
+            var locations = await _locationService.GetPlayerLocationOptionsAsync(username);
+            return Ok(locations);
+        }
+
+        [HttpPost("player-create")]
+        [Authorize]
+        public async Task<IActionResult> PlayerCreateLocation([FromBody] CreateLocationRequest req)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(username)) return Unauthorized();
+            if (string.IsNullOrWhiteSpace(req.Name)) return BadRequest("Name is required.");
+            try
+            {
+                var location = await _locationService.CreatePlayerLocationAsync(req.Name.Trim(), username);
+                return Ok(location);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

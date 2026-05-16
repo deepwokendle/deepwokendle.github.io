@@ -22,6 +22,16 @@ namespace DeepwokendleApi.Interfaces
         Task<IEnumerable<Monster>> GetAllMonstersAdminAsync();
         Task<int> AdminCreateMonsterAsync(MonsterCommand dto, string username);
         Task PublishMonsterAsync(int id);
-    }
 
+        Task<(IEnumerable<MonsterSuggestion> Items, int Total)> GetPendingSuggestionsAsync(int page, int pageSize, string sort, string username, string search = "");
+        Task<IEnumerable<MonsterSuggestion>> GetUserSuggestionsAsync(string username);
+        Task SetMonsterVoteAsync(int monsterId, string username, int vote);
+        Task RemoveMonsterVoteAsync(int monsterId, string username);
+        Task ReportMonsterAsync(int monsterId, string username);
+
+        Task<int> CreateUserSuggestionAsync(MonsterCommand cmd, string username);
+        Task<bool> UpdateUserSuggestionAsync(int id, MonsterCommand cmd, string username);
+        Task<bool> DeleteUserSuggestionAsync(int id, string username);
+        Task<Monster?> GetUserSuggestionEnrichedAsync(int id, string username);
+    }
 }

@@ -28,4 +28,10 @@ public class LootService : ILootService
     public Task<Loot> CreateLootAsync(string name) => _lootRepository.CreateLootAsync(name);
 
     public Task DeleteLootAsync(int id) => _lootRepository.DeleteLootAsync(id);
+
+    public Task<IEnumerable<Loot>> GetPlayerLootOptionsAsync(string username)
+        => _lootRepository.GetPlayerLootOptionsAsync(username);
+
+    public Task<Loot> CreatePlayerLootAsync(string name, string username)
+        => _lootRepository.CreatePlayerLootAsync(name, username);
 }

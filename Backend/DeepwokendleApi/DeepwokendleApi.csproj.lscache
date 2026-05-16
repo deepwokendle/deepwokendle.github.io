@@ -104,6 +104,7 @@ Models/
  Monster.cs
  MonsterLocation.cs
  MonsterLoot.cs
+ MonsterSuggestion.cs
  User.cs
 obj/Debug/net8.0/
  .NETCoreApp,Version=v8.0.AssemblyAttributes.cs

@@ -4,9 +4,10 @@ import {
   useState,
   useCallback,
   useRef,
+  useEffect,
   type ReactNode,
 } from 'react';
-import { setUnauthorizedHandler } from '../services/api';
+import { setUnauthorizedHandler, apiRefreshToken } from '../services/api';
 import { confirm } from '../components/common/ConfirmDialog';
 import { showToast } from '../utils/toast';
 
@@ -22,6 +23,17 @@ const decodeRole = (token: string): string | null => {
     return null;
   }
 };
+
+const getTokenExpiry = (token: string): number | null => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.exp ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+};
+
+const REFRESH_BEFORE_MS = 5 * 60 * 1000; // refresh 5 min before expiry
 
 interface AuthContextValue {
   token: string | null;
@@ -50,20 +62,65 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const pendingResolver = useRef<((value: void) => void) | null>(null);
   const pendingRejector = useRef<((reason?: unknown) => void) | null>(null);
+  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Always-fresh ref so the setTimeout callback never closes over stale state
+  const doRefreshRef = useRef<() => Promise<void>>(async () => {});
+
+  const scheduleRefresh = useCallback((currentToken: string) => {
+    if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    const exp = getTokenExpiry(currentToken);
+    if (!exp) return;
+    const delay = exp - Date.now() - REFRESH_BEFORE_MS;
+    if (delay <= 0) return; // token already expired or about to — let the 401 handler deal with it
+    refreshTimerRef.current = setTimeout(() => {
+      doRefreshRef.current();
+    }, delay);
+  }, []);
 
   const login = useCallback((newToken: string, newUsername: string) => {
     localStorage.setItem('token', newToken);
     localStorage.setItem('username', newUsername);
     setToken(newToken);
     setUsername(newUsername);
-  }, []);
+    scheduleRefresh(newToken);
+  }, [scheduleRefresh]);
 
   const logout = useCallback(() => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     setToken(null);
     setUsername(null);
   }, []);
+
+  // Update the refresh callback on every render so it always sees fresh state
+  doRefreshRef.current = async () => {
+    const currentToken = localStorage.getItem('token');
+    if (!currentToken) return;
+    try {
+      const res = await apiRefreshToken(currentToken);
+      if (res.ok) {
+        const { token: freshToken } = await res.json();
+        login(freshToken, localStorage.getItem('username') ?? '');
+      }
+      // If not ok (e.g. token already expired): do nothing — next request will 401 and the handler fires
+    } catch {
+      // Network error: do nothing, next real request will handle it
+    }
+  };
+
+  // Schedule refresh on mount if a token already exists (page reload case)
+  useEffect(() => {
+    const stored = localStorage.getItem('token');
+    if (stored) scheduleRefresh(stored);
+    return () => {
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openLoginModal = useCallback((loginMode = true) => {
     setIsLoginMode(loginMode);

@@ -50,14 +50,14 @@ export function ConfirmDialogProvider() {
           <p className={styles.message}>{state.opts.message}</p>
         )}
         <div className={styles.btnRow}>
-          <button className="btn border" onClick={() => close(false)}>
-            {state.opts.cancelText ?? 'Cancel'}
-          </button>
           <button
             className={`btn border${state.opts.danger ? ' btn-danger' : ' btn-primary'}`}
             onClick={() => close(true)}
           >
             {state.opts.confirmText ?? 'Confirm'}
+          </button>
+          <button className="btn border" onClick={() => close(false)}>
+            {state.opts.cancelText ?? 'Cancel'}
           </button>
         </div>
       </div>

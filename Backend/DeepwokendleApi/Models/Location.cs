@@ -4,5 +4,7 @@ namespace DeepwokendleApi.Models
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
+        public bool CreatedByPlayer { get; set; }
+        public string? UserAtCreation { get; set; }
     }
 }

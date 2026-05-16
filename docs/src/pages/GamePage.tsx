@@ -1,11 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Header from '../components/layout/Header';
-import Sidebar from '../components/sidebar/Sidebar';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import ChatSidebar from '../components/chat/ChatSidebar';
 import GameBoard from '../components/game/GameBoard';
-import LoginModal from '../components/modals/LoginModal';
-import SuggestMonsterModal from '../components/modals/SuggestMonsterModal';
 import LoadingOverlay from '../components/common/LoadingOverlay';
 import GameSkeleton from '../components/common/GameSkeleton';
 import Footer from '../components/common/Footer';
@@ -15,11 +11,15 @@ import { useGame } from '../hooks/useGame';
 import { useMonsters } from '../hooks/useMonsters';
 import { useSignalR } from '../hooks/useSignalR';
 import { useAuth } from '../context/AuthContext';
+import { useLayout } from '../context/LayoutContext';
+import { useOverlaySync } from '../hooks/useOverlaySync';
 import type { GameMode } from '../types';
 
 export default function GamePage() {
   const { waitForLogin } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { sidebarOpen, setSidebarOpen } = useLayout();
   const { monsters, loadMonsters } = useMonsters();
   const { messages, sendMessage, loadOlderMessages, hasMoreHistory } = useSignalR();
   const {
@@ -28,27 +28,21 @@ export default function GamePage() {
     initNormalMode, initInfiniteMode, guessCharacter,
   } = useGame();
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
-  const [suggestOpen, setSuggestOpen] = useState(false);
   const [currentMode, setCurrentMode] = useState<GameMode>('normal');
   const [unreadCount, setUnreadCount] = useState(0);
   const prevLastMessageIdRef = useRef<string | undefined>(undefined);
+  const modeRef = useRef<string | null | undefined>(undefined);
 
-  const closeSidebars = () => { 
-    setSidebarOpen(false); 
-    setChatOpen(false); 
-  };
+  useOverlaySync(chatOpen);
 
   const startNormalMode = useCallback(async () => {
-    closeSidebars();
     setCurrentMode('normal');
     const m = await loadMonsters();
     initNormalMode(m);
   }, [loadMonsters, initNormalMode]);
 
   const startInfiniteMode = useCallback(async () => {
-    closeSidebars();
     setCurrentMode('infinite');
     const m = await loadMonsters();
     const needsLogin = await initInfiniteMode(m);
@@ -62,29 +56,38 @@ export default function GamePage() {
     }
   }, [loadMonsters, initInfiniteMode, waitForLogin]);
 
+  // initialize on mount and react to URL mode param changes
   useEffect(() => {
-    startNormalMode();
-  }, []);
+    const mode = searchParams.get('mode');
+    if (modeRef.current === mode) return;
+    modeRef.current = mode;
+    if (mode === 'infinite') {
+      startInfiniteMode();
+    } else {
+      startNormalMode();
+    }
+  }, [searchParams, startNormalMode, startInfiniteMode]);
 
+  // game:initInfinite event fires from within the game UI to request mode switch
   useEffect(() => {
-    const handler = () => startInfiniteMode();
+    const handler = () => navigate('/?mode=infinite');
     window.addEventListener('game:initInfinite', handler);
     return () => window.removeEventListener('game:initInfinite', handler);
-  }, [startInfiniteMode]);
+  }, [navigate]);
 
+  // overlay click closes chat (AppLayout handles closing sidebar)
   useEffect(() => {
     const overlay = document.getElementById('overlay');
     if (!overlay) return;
-    const handler = () => closeSidebars();
+    const handler = () => setChatOpen(false);
     overlay.addEventListener('click', handler);
     return () => overlay.removeEventListener('click', handler);
   }, []);
 
+  // sidebar opening should close chat
   useEffect(() => {
-    const anyOpen = sidebarOpen || chatOpen;
-    const overlay = document.getElementById('overlay');
-    if (overlay) overlay.classList.toggle('visible', anyOpen);
-  }, [sidebarOpen, chatOpen]);
+    if (sidebarOpen) setChatOpen(false);
+  }, [sidebarOpen]);
 
   useEffect(() => {
     if (!messages.length) return;
@@ -104,20 +107,6 @@ export default function GamePage() {
   return (
     <>
       <LoadingOverlay visible={isLoading && !!monsters} />
-
-      <div id="overlay" />
-
-      <Header onHamburgerClick={() => { setSidebarOpen(o => !o); if (chatOpen) setChatOpen(false); }} />
-
-      <Sidebar
-        open={sidebarOpen}
-        onNormalMode={startNormalMode}
-        onInfiniteMode={startInfiniteMode}
-        onSuggestNpc={() => { closeSidebars(); setSuggestOpen(true); }}
-        onLeaderboard={() => { closeSidebars(); navigate('/leaderboard'); }}
-        onMonsterIndex={() => { closeSidebars(); navigate('/monsters'); }}
-        onAdminMonsters={() => { closeSidebars(); navigate('/admin/monsters'); }}
-      />
 
       <ChatSidebar
         open={chatOpen}
@@ -144,7 +133,7 @@ export default function GamePage() {
                 nextResetUtc={nextResetUtc}
                 monsters={monsters}
                 onGuess={handleGuess}
-                onInitInfinite={startInfiniteMode}
+                onInitInfinite={() => navigate('/?mode=infinite')}
               />
             ) : (
               <GameSkeleton />
@@ -177,9 +166,6 @@ export default function GamePage() {
       <Footer />
       <Fab />
       <MiniSharko />
-
-      <LoginModal />
-      <SuggestMonsterModal open={suggestOpen} onClose={() => setSuggestOpen(false)} />
     </>
   );
 }

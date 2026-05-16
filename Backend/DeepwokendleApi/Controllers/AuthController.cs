@@ -1,5 +1,6 @@
 ﻿using DeepwokendleApi.DTOS;
 using DeepwokendleApi.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 [ApiController]
@@ -35,5 +36,18 @@ public class AuthController : ControllerBase
         user.PasswordHash = null;
         var token = _tokenService.GenerateToken(user);
         return Ok(new { token, user });
+    }
+
+    [HttpPost("refresh")]
+    [Authorize]
+    public async Task<IActionResult> Refresh()
+    {
+        var username = User.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(username)) return Unauthorized();
+        var user = await _userService.GetByUsername(username);
+        if (user == null) return Unauthorized();
+        user.PasswordHash = null;
+        var token = _tokenService.GenerateToken(user);
+        return Ok(new { token });
     }
 }

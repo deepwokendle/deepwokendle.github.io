@@ -28,4 +28,10 @@ public class LocationService : ILocationService
     public Task<Location> CreateLocationAsync(string name) => _locationRepository.CreateLocationAsync(name);
 
     public Task DeleteLocationAsync(int id) => _locationRepository.DeleteLocationAsync(id);
+
+    public Task<IEnumerable<Location>> GetPlayerLocationOptionsAsync(string username)
+        => _locationRepository.GetPlayerLocationOptionsAsync(username);
+
+    public Task<Location> CreatePlayerLocationAsync(string name, string username)
+        => _locationRepository.CreatePlayerLocationAsync(name, username);
 }

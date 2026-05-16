@@ -1726,4 +1726,6 @@ button:is(:disabled) {
     aspect-ratio: 1 / 1.15;
     border-radius: 4px;
 }
-
+.gs__placeholder, .gs__single-value {
+  color: var(--text-color) !important;
+}

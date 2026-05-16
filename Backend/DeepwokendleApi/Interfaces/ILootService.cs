@@ -11,5 +11,7 @@ namespace DeepwokendleApi.Interfaces
         Task RemoveLootFromMonsterAsync(int monsterId, int lootId);
         Task<Loot> CreateLootAsync(string name);
         Task DeleteLootAsync(int id);
+        Task<IEnumerable<Loot>> GetPlayerLootOptionsAsync(string username);
+        Task<Loot> CreatePlayerLootAsync(string name, string username);
     }
 }

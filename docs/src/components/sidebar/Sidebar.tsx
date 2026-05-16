@@ -5,15 +5,15 @@ interface Props {
   open: boolean;
   onNormalMode: () => void;
   onInfiniteMode: () => void;
-  onSuggestNpc: () => void;
   onLeaderboard: () => void;
   onMonsterIndex: () => void;
+  onSuggestions: () => void;
   onAdminMonsters: () => void;
 }
 
 export default function Sidebar({
   open, onNormalMode, onInfiniteMode,
-  onLeaderboard, onMonsterIndex, onAdminMonsters,
+  onLeaderboard, onMonsterIndex, onSuggestions, onAdminMonsters,
 }: Props) {
   const { isAdmin } = useAuth();
   const [adminOpen, setAdminOpen] = useState(false);
@@ -26,6 +26,7 @@ export default function Sidebar({
           <li><button onClick={onInfiniteMode}>Infinite Mode</button></li>
           <li><button onClick={onLeaderboard}>Leaderboard</button></li>
           <li><button onClick={onMonsterIndex}>Monster Index</button></li>
+          <li><button onClick={onSuggestions}>Suggestions</button></li>
           {isAdmin && (
             <li className="sidebar-admin-group">
               <button

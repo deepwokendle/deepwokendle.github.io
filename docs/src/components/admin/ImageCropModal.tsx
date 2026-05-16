@@ -8,11 +8,10 @@ interface Props {
   imageSrc: string;
   onConfirm: (file: File, previewUrl: string) => void;
   onCancel: () => void;
+  aspect?: number;
 }
 
-const ASPECT = 3 / 4; // matches monster-card aspect-ratio ~1/1.15
-
-export default function ImageCropModal({ imageSrc, onConfirm, onCancel }: Props) {
+export default function ImageCropModal({ imageSrc, onConfirm, onCancel, aspect = 3 / 4 }: Props) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedArea, setCroppedArea] = useState<Area | null>(null);
@@ -52,7 +51,7 @@ export default function ImageCropModal({ imageSrc, onConfirm, onCancel }: Props)
             image={imageSrc}
             crop={crop}
             zoom={zoom}
-            aspect={ASPECT}
+            aspect={aspect}
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onCropComplete={onCropComplete}

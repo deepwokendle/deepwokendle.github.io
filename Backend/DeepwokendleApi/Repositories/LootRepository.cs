@@ -73,5 +73,26 @@ namespace DeepwokendleApi.Repositories
             using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             await connection.ExecuteAsync("DELETE FROM loot WHERE id = @Id", new { Id = id });
         }
+
+        public async Task<IEnumerable<Loot>> GetPlayerLootOptionsAsync(string username)
+        {
+            using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            return await connection.QueryAsync<Loot>(
+                @"SELECT id, name FROM loot
+                  WHERE created_by_player = false
+                     OR (created_by_player = true AND user_at_creation = @Username)
+                  ORDER BY name;",
+                new { Username = username });
+        }
+
+        public async Task<Loot> CreatePlayerLootAsync(string name, string username)
+        {
+            using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            return await connection.QuerySingleAsync<Loot>(
+                @"INSERT INTO loot (name, created_by_player, user_at_creation)
+                  VALUES (@Name, true, @Username)
+                  RETURNING id, name;",
+                new { Name = name, Username = username });
+        }
     }
 }

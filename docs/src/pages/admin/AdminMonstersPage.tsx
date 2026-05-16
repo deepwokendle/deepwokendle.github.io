@@ -1,10 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Header from '../../components/layout/Header';
-import Sidebar from '../../components/sidebar/Sidebar';
 import LoadingOverlay from '../../components/common/LoadingOverlay';
-import LoginModal from '../../components/modals/LoginModal';
 import MonsterFormModal from '../../components/admin/MonsterFormModal';
+import { useOverlaySync } from '../../hooks/useOverlaySync';
 import { confirm } from '../../components/common/ConfirmDialog';
 import { showToast } from '../../utils/toast';
 import {
@@ -21,9 +18,8 @@ import Tooltip from '../../components/common/Tooltip';
 const PAGE_SIZE = 12;
 
 export default function AdminMonstersPage() {
-  const navigate = useNavigate();
+  useOverlaySync();
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [monsters, setMonsters] = useState<MonsterAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Set<number>>(new Set());
@@ -48,19 +44,6 @@ export default function AdminMonstersPage() {
   };
 
   useEffect(() => { fetchMonsters(); }, []);
-
-  useEffect(() => {
-    const overlay = document.getElementById('overlay');
-    if (!overlay) return;
-    const handler = () => setSidebarOpen(false);
-    overlay.addEventListener('click', handler);
-    return () => overlay.removeEventListener('click', handler);
-  }, []);
-
-  useEffect(() => {
-    const overlay = document.getElementById('overlay');
-    if (overlay) overlay.classList.toggle('visible', sidebarOpen);
-  }, [sidebarOpen]);
 
   const filtered = useMemo(() => monsters.filter(m => {
     if (searchName && !m.name.toLowerCase().includes(searchName.toLowerCase())) return false;
@@ -157,27 +140,12 @@ export default function AdminMonstersPage() {
     fetchMonsters();
   };
 
-  const goToGame = () => { setSidebarOpen(false); navigate('/'); };
-
   const pageIds = pageMonsters.map(m => m.id);
   const allPageSelected = pageIds.length > 0 && pageIds.every(id => selected.has(id));
 
   return (
     <>
       <LoadingOverlay visible={loading} />
-      <div id="overlay" />
-
-      <Header onHamburgerClick={() => setSidebarOpen(o => !o)} />
-
-      <Sidebar
-        open={sidebarOpen}
-        onNormalMode={goToGame}
-        onInfiniteMode={goToGame}
-        onSuggestNpc={goToGame}
-        onLeaderboard={goToGame}
-        onMonsterIndex={() => { setSidebarOpen(false); navigate('/monsters'); }}
-        onAdminMonsters={() => setSidebarOpen(false)}
-      />
 
       <main className={styles.page}>
         <div className={styles.toolbar}>
@@ -294,8 +262,6 @@ export default function AdminMonstersPage() {
           onSaved={onSaved}
         />
       )}
-
-      <LoginModal />
     </>
   );
 }
