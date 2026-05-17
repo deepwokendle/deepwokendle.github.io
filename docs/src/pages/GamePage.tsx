@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import ChatSidebar from '../components/chat/ChatSidebar';
 import GameBoard from '../components/game/GameBoard';
 import LoadingOverlay from '../components/common/LoadingOverlay';
@@ -17,7 +17,6 @@ import type { GameMode } from '../types';
 
 export default function GamePage() {
   const { waitForLogin } = useAuth();
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { sidebarOpen, setSidebarOpen } = useLayout();
   const { monsters, loadMonsters } = useMonsters();
@@ -25,10 +24,11 @@ export default function GamePage() {
   const {
     randomCharacter, guesses, amountsGuessed, infiniteStreak,
     isLoading, nextResetUtc, alreadyGuessed, isDisabled, isAwaitingNext,
-    initNormalMode, initInfiniteMode, guessCharacter,
+    infiniteResult, initNormalMode, initInfiniteMode, guessCharacter,
   } = useGame();
 
   const [chatOpen, setChatOpen] = useState(false);
+  const chatOpenRef = useRef(false);
   const [currentMode, setCurrentMode] = useState<GameMode>('normal');
   const [unreadCount, setUnreadCount] = useState(0);
   const prevLastMessageIdRef = useRef<string | undefined>(undefined);
@@ -68,12 +68,12 @@ export default function GamePage() {
     }
   }, [searchParams, startNormalMode, startInfiniteMode]);
 
-  // game:initInfinite event fires from within the game UI to request mode switch
+  // game:initInfinite event fires from within the game UI to re-initialize infinite mode
   useEffect(() => {
-    const handler = () => navigate('/?mode=infinite');
+    const handler = () => startInfiniteMode();
     window.addEventListener('game:initInfinite', handler);
     return () => window.removeEventListener('game:initInfinite', handler);
-  }, [navigate]);
+  }, [startInfiniteMode]);
 
   // overlay click closes chat (AppLayout handles closing sidebar)
   useEffect(() => {
@@ -89,11 +89,13 @@ export default function GamePage() {
     if (sidebarOpen) setChatOpen(false);
   }, [sidebarOpen]);
 
+  useEffect(() => { chatOpenRef.current = chatOpen; }, [chatOpen]);
+
   useEffect(() => {
     if (!messages.length) return;
     const lastMsg = messages[messages.length - 1];
     const lastId = lastMsg.id ?? `${lastMsg.user}|${lastMsg.message}`;
-    if (prevLastMessageIdRef.current !== undefined && lastId !== prevLastMessageIdRef.current && !chatOpen) {
+    if (prevLastMessageIdRef.current !== undefined && lastId !== prevLastMessageIdRef.current && !chatOpenRef.current && !lastMsg.isSystem) {
       setUnreadCount(prev => prev + 1);
     }
     prevLastMessageIdRef.current = lastId;
@@ -132,8 +134,9 @@ export default function GamePage() {
                 alreadyGuessed={alreadyGuessed}
                 nextResetUtc={nextResetUtc}
                 monsters={monsters}
+                infiniteResult={infiniteResult}
                 onGuess={handleGuess}
-                onInitInfinite={() => navigate('/?mode=infinite')}
+                onInitInfinite={startInfiniteMode}
               />
             ) : (
               <GameSkeleton />

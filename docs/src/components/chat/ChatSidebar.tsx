@@ -29,21 +29,33 @@ export default function ChatSidebar({ open, messages, onSendMessage, loadOlderMe
   const [sending, setSending] = useState(false);
   const [remaining, setRemaining] = useState(MAX_LENGTH);
   const [agreed, setAgreed] = useState(() => localStorage.getItem('chat_agreed') === '1');
+  const [tab, setTab] = useState<'chat' | 'system'>('chat');
   const chatRef = useRef<HTMLDivElement>(null);
+  const systemRef = useRef<HTMLDivElement>(null);
   const prevScrollHeightRef = useRef(0);
   const loadingHistoryRef = useRef(false);
   const username = localStorage.getItem('username') ?? '';
 
-  // Scroll handler: restore position after history prepend, or auto-scroll for new messages
+  const playerMessages = messages.filter(m => !m.isSystem);
+  const systemMessages = messages.filter(m => m.isSystem);
+
   useLayoutEffect(() => {
-    const el = chatRef.current;
-    if (!el) return;
-    if (prevScrollHeightRef.current > 0) {
-      el.scrollTop = el.scrollHeight - prevScrollHeightRef.current;
-      prevScrollHeightRef.current = 0;
+    if (!messages.length) return;
+    const lastMsg = messages[messages.length - 1];
+
+    if (lastMsg.isSystem) {
+      const el = systemRef.current;
+      if (el) el.scrollTop = el.scrollHeight;
     } else {
-      const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
-      if (isNearBottom) el.scrollTop = el.scrollHeight;
+      const el = chatRef.current;
+      if (!el) return;
+      if (prevScrollHeightRef.current > 0) {
+        el.scrollTop = el.scrollHeight - prevScrollHeightRef.current;
+        prevScrollHeightRef.current = 0;
+      } else {
+        const isNearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 150;
+        if (isNearBottom) el.scrollTop = el.scrollHeight;
+      }
     }
   }, [messages]);
 
@@ -57,6 +69,15 @@ export default function ChatSidebar({ open, messages, onSendMessage, loadOlderMe
       loadingHistoryRef.current = false;
     }
   }, [hasMoreHistory, loadOlderMessages]);
+
+  const handleTabChange = (newTab: 'chat' | 'system') => {
+    setTab(newTab);
+    if (newTab === 'system') {
+      requestAnimationFrame(() => {
+        if (systemRef.current) systemRef.current.scrollTop = systemRef.current.scrollHeight;
+      });
+    }
+  };
 
   const handleAgree = () => {
     localStorage.setItem('chat_agreed', '1');
@@ -129,7 +150,6 @@ export default function ChatSidebar({ open, messages, onSendMessage, loadOlderMe
   return (
     <aside id="chatSidebar" className={open ? 'open border' : ''}>
       <div className="chatContainer" style={{ position: 'relative' }}>
-        {/* First-time agreement overlay */}
         {!agreed && (
           <div className="chatAgreementOverlay">
             <div className="chatAgreementBox">
@@ -147,32 +167,67 @@ export default function ChatSidebar({ open, messages, onSendMessage, loadOlderMe
         )}
 
         <div id="messagesContainer">
-          {hasMoreHistory && (
-            <div className="chatHistoryHint">Scroll up to load older messages</div>
-          )}
-          <div id="chat" className="customizedScrollbar" ref={chatRef} onScroll={handleScroll}>
-            {messages.map((msg, i) => (
-              <div key={msg.id ?? i} className={`chat-msg${msg.isSystem ? ' chat-msg-system' : ''}`}>
-                <p>
-                  <b
-                    style={{ color: msg.isSystem ? 'gray' : (msg.user === username ? 'darkgreen' : undefined) }}
-                    dangerouslySetInnerHTML={{ __html: escapeHtml(msg.user) + ':' }}
-                  />
-                  <span dangerouslySetInnerHTML={{ __html: ' ' + escapeHtml(msg.message) }} />
-                </p>
-                {!msg.isSystem && msg.user !== username && msg.id && (
-                  <Tooltip content="Report" placement="left">
-                    <button
-                      className="chat-report-btn"
-                      onClick={() => handleReport(msg.id!, msg.user)}
-                      aria-label="Report message"
-                    >
-                      <i className="fas fa-flag" />
-                    </button>
-                  </Tooltip>
-                )}
-              </div>
-            ))}
+          <div className="chatTabs">
+            <button
+              className={`chatTab${tab === 'chat' ? ' chatTabActive' : ''}`}
+              onClick={() => handleTabChange('chat')}
+            >
+              Chat
+            </button>
+            <button
+              className={`chatTab${tab === 'system' ? ' chatTabActive' : ''}`}
+              onClick={() => handleTabChange('system')}
+            >
+              System
+            </button>
+          </div>
+
+          {/* Chat tab — kept in DOM to preserve scroll position */}
+          <div style={{ display: tab === 'chat' ? 'flex' : 'none', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+            {hasMoreHistory && (
+              <div className="chatHistoryHint">Scroll up to load older messages</div>
+            )}
+            <div id="chat" className="customizedScrollbar" ref={chatRef} onScroll={handleScroll}>
+              {playerMessages.map((msg, i) => (
+                <div key={msg.id ?? i} className="chat-msg">
+                  <p>
+                    <b
+                      style={{ color: msg.user === username ? 'darkgreen' : undefined }}
+                      dangerouslySetInnerHTML={{ __html: escapeHtml(msg.user) + ':' }}
+                    />
+                    <span dangerouslySetInnerHTML={{ __html: ' ' + escapeHtml(msg.message) }} />
+                  </p>
+                  {msg.user !== username && msg.id && (
+                    <Tooltip content="Report" placement="left">
+                      <button
+                        className="chat-report-btn"
+                        onClick={() => handleReport(msg.id!, msg.user)}
+                        aria-label="Report message"
+                      >
+                        <i className="fas fa-flag" />
+                      </button>
+                    </Tooltip>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* System tab — kept in DOM to preserve scroll position */}
+          <div style={{ display: tab === 'system' ? 'flex' : 'none', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+            <div id="chatSystem" className="customizedScrollbar" ref={systemRef}>
+              {systemMessages.length === 0 ? (
+                <div className="chatHistoryHint" style={{ marginTop: '1rem' }}>No system messages yet.</div>
+              ) : (
+                systemMessages.map((msg, i) => (
+                  <div key={i} className="chat-msg chat-msg-system">
+                    <p>
+                      <span dangerouslySetInnerHTML={{ __html: escapeHtml(msg.message) }} />
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
 

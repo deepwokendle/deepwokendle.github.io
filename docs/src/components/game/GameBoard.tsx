@@ -16,6 +16,7 @@ interface Props {
   alreadyGuessed: boolean;
   nextResetUtc: Date | null;
   monsters: Monster[];
+  infiniteResult: 'won' | 'lost' | null;
   onGuess: (monsterId: number) => void;
   onInitInfinite?: () => void;
 }
@@ -50,7 +51,7 @@ const GAME_TWITTER_TEXT = (tries: number | string) =>
 
 export default function GameBoard({
   mode, guesses, randomCharacter, amountsGuessed, infiniteStreak,
-  isDisabled, isAwaitingNext, alreadyGuessed, nextResetUtc, monsters, onGuess, onInitInfinite,
+  isDisabled, isAwaitingNext, alreadyGuessed, nextResetUtc, monsters, infiniteResult, onGuess, onInitInfinite,
 }: Props) {
   const [selected, setSelected] = useState<SelectOption | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -139,7 +140,9 @@ export default function GameBoard({
 
       <div className="center">
         {isDisabled && mode === 'infinite' ? (
-          <button className="btn border" onClick={handleRetry}>RETRY</button>
+          <button className="btn border" onClick={handleRetry}>
+            {infiniteResult === 'won' ? 'NEXT' : 'RETRY'}
+          </button>
         ) : (
           <button
             className={`btn border${isDisabled || isAwaitingNext ? ' disabled' : ''}`}

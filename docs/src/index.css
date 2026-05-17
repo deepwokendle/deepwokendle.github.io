@@ -1129,6 +1129,32 @@ input:focus {
     opacity:1;
 }
 
+/* Chat tabs */
+.chatTabs {
+    display: flex;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    margin-bottom: 4px;
+}
+
+.chatTab {
+    flex: 1;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 6px 0 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: rgba(0, 0, 0, 0.45);
+    transition: color 0.15s, border-color 0.15s;
+    font-family: inherit;
+}
+
+.chatTabActive {
+    color: black;
+    border-bottom-color: var(--background);
+    font-weight: 600;
+}
 
 #message {
     padding: 15px 5px 2px;
