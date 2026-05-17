@@ -53,6 +53,9 @@ public class MonsterService : IMonsterService
     public Task<Monster> GetEnrichedMonsterAsync(int id)
         => _monsterRepository.GetEnrichedMonsterAsync(id);
 
+    public Task<Dictionary<int, Monster>> GetEnrichedMonstersAsync(int[] ids)
+        => _monsterRepository.GetEnrichedMonstersAsync(ids);
+
     public async Task<int?> GetCurrentDailyMonsterIdAsync()
     {
         var today = DateTime.UtcNow.Date;
@@ -115,4 +118,7 @@ public class MonsterService : IMonsterService
 
     public Task<Monster?> GetUserSuggestionEnrichedAsync(int id, string username)
         => _monsterRepository.GetUserSuggestionEnrichedAsync(id, username);
+
+    public Task<MonsterSuggestion?> GetSuggestionByIdAsync(int id, string username)
+        => _monsterRepository.GetSuggestionByIdAsync(id, username);
 }

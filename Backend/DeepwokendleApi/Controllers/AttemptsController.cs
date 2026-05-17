@@ -32,22 +32,33 @@ namespace DeepwokendleApi.Controllers
             try
             {
                 var username = User.Identity?.Name;
-                var query = await _attemptService.GetStreakAsync(username);
-                var guessedIds = await _attemptService.GetAttemptedMonsterIdsAsync(username);
 
-                var targetId = await _monsterService.GetInfiniteMonsterIdForUserAsync(username);
+                var streakTask = _attemptService.GetStreakAsync(username);
+                var guessedIdsTask = _attemptService.GetAttemptedMonsterIdsAsync(username);
+                var targetIdTask = _monsterService.GetInfiniteMonsterIdForUserAsync(username);
+                await Task.WhenAll(streakTask, guessedIdsTask, targetIdTask);
+
+                var query = streakTask.Result;
+                var guessedIds = guessedIdsTask.Result;
+                var targetId = targetIdTask.Result;
 
                 var previousGuesses = new List<object>();
-                if (targetId.HasValue)
+                if (targetId.HasValue && guessedIds.Count > 0)
                 {
-                    var target = await _monsterService.GetEnrichedMonsterAsync(targetId.Value);
-                    foreach (var id in guessedIds)
+                    var allIds = guessedIds.Contains(targetId.Value)
+                        ? guessedIds.ToArray()
+                        : [.. guessedIds, targetId.Value];
+                    var monsters = await _monsterService.GetEnrichedMonstersAsync(allIds);
+
+                    if (monsters.TryGetValue(targetId.Value, out var target))
                     {
-                        var guessed = await _monsterService.GetEnrichedMonsterAsync(id);
-                        if (guessed != null && target != null)
+                        foreach (var id in guessedIds)
                         {
-                            var fields = MonsterComparer.Compare(guessed, target);
-                            previousGuesses.Add(new { monsterId = id, fields });
+                            if (monsters.TryGetValue(id, out var guessed))
+                            {
+                                var fields = MonsterComparer.Compare(guessed, target);
+                                previousGuesses.Add(new { monsterId = id, fields });
+                            }
                         }
                     }
                 }
@@ -93,8 +104,12 @@ namespace DeepwokendleApi.Controllers
                             $"{attemptCommand.User} has guessed {charName} in infinite mode with {attemptsStr}! They now have a streak of {newStreak}.");
                     });
                 }
-                else if (attemptAmount >= 5)
+                int lostStreak = 0;
+                if (!correct && attemptAmount >= 5)
+                {
+                    lostStreak = (await _attemptService.GetStreakAsync(attemptCommand.User)).StreakAmmount;
                     await _attemptService.UpdateUserCurrStreak(attemptCommand.User);
+                }
 
                 List<GuessFieldResult> fields = new();
                 string targetName = null;
@@ -109,6 +124,10 @@ namespace DeepwokendleApi.Controllers
                         fields = MonsterComparer.Compare(guessed, target);
                     if (correct || attemptAmount >= 5)
                         targetName = target?.Name;
+
+                    if (!correct && attemptAmount >= 5 && targetName != null)
+                        _ = Task.Run(() => _hubContext.Clients.All.SendAsync("ReceiveSystemLossMessage",
+                            $"{attemptCommand.User} failed to guess {targetName} and lost their streak of {lostStreak}."));
                 }
 
                 return Ok(new { correct, attemptAmount, fields, targetName });

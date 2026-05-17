@@ -136,22 +136,77 @@ namespace DeepwokendleApi.Repositories
             await conn.ExecuteAsync(sql, new { Username = username, MonsterId = monsterId });
         }
 
+        private class EnrichedRow
+        {
+            public int Id { get; set; }
+            public string Name { get; set; } = "";
+            public string Picture { get; set; } = "";
+            public string MainHabitat { get; set; } = "";
+            public bool Humanoid { get; set; }
+            public bool Pending { get; set; }
+            public int ElementId { get; set; }
+            public string ElemName { get; set; } = "";
+            public int CategoryId { get; set; }
+            public string CatName { get; set; } = "";
+            public string LootNames { get; set; } = "";
+            public string LootIds { get; set; } = "";
+            public string LocationNames { get; set; } = "";
+            public string LocationIds { get; set; } = "";
+        }
+
+        private const string EnrichedSqlBase = @"
+            SELECT m.id, m.name, m.picture, m.mainhabitat AS MainHabitat, m.humanoid, m.pending,
+                   m.elementid AS ElementId, e.name AS ElemName,
+                   m.categoryid AS CategoryId, c.name AS CatName,
+                   COALESCE((SELECT string_agg(l.name, '|' ORDER BY l.name)
+                              FROM monster_loot ml JOIN loot l ON l.id = ml.lootid
+                              WHERE ml.monsterid = m.id), '') AS LootNames,
+                   COALESCE((SELECT string_agg(ml.lootid::text, '|' ORDER BY l.name)
+                              FROM monster_loot ml JOIN loot l ON l.id = ml.lootid
+                              WHERE ml.monsterid = m.id), '') AS LootIds,
+                   COALESCE((SELECT string_agg(loc.name, '|' ORDER BY loc.name)
+                              FROM monster_location mloc JOIN location loc ON loc.id = mloc.locationid
+                              WHERE mloc.monsterid = m.id), '') AS LocationNames,
+                   COALESCE((SELECT string_agg(mloc.locationid::text, '|' ORDER BY loc.name)
+                              FROM monster_location mloc JOIN location loc ON loc.id = mloc.locationid
+                              WHERE mloc.monsterid = m.id), '') AS LocationIds
+            FROM monster m
+            JOIN element e ON e.id = m.elementid
+            JOIN category c ON c.id = m.categoryid";
+
+        private static Monster MapEnriched(EnrichedRow r) => new()
+        {
+            Id = r.Id, Name = r.Name, Picture = r.Picture,
+            MainHabitat = r.MainHabitat, Humanoid = r.Humanoid, Pending = r.Pending,
+            ElementId = r.ElementId,
+            Element = new Element { Id = r.ElementId, Name = r.ElemName },
+            CategoryId = r.CategoryId,
+            Category = new Category { Id = r.CategoryId, Name = r.CatName },
+            LootPool = r.LootNames.Length > 0
+                ? r.LootNames.Split('|').Zip(r.LootIds.Split('|'), (name, idStr) =>
+                    new MonsterLoot { MonsterId = r.Id, LootId = int.Parse(idStr), LootName = name })
+                : Enumerable.Empty<MonsterLoot>(),
+            LocationPool = r.LocationNames.Length > 0
+                ? r.LocationNames.Split('|').Zip(r.LocationIds.Split('|'), (name, idStr) =>
+                    new MonsterLocation { MonsterId = r.Id, LocationId = int.Parse(idStr), Name = name })
+                : Enumerable.Empty<MonsterLocation>(),
+        };
+
         public async Task<Monster> GetEnrichedMonsterAsync(int id)
         {
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            var monster = await conn.QueryFirstOrDefaultAsync<Monster>(
-                "SELECT id, name, picture, mainhabitat AS MainHabitat, humanoid, elementid AS ElementId, categoryid AS CategoryId FROM monster WHERE id = @Id",
-                new { Id = id });
-            if (monster == null) return null;
-            monster.Element = await conn.QueryFirstOrDefaultAsync<Element>("SELECT id, name FROM element WHERE id = @Id", new { Id = monster.ElementId });
-            monster.Category = await conn.QueryFirstOrDefaultAsync<Category>("SELECT id, name FROM category WHERE id = @Id", new { Id = monster.CategoryId });
-            monster.LootPool = await conn.QueryAsync<MonsterLoot>(
-                "SELECT ml.monsterid AS MonsterId, ml.lootid AS LootId, l.name AS LootName FROM monster_loot ml JOIN loot l ON l.id = ml.lootid WHERE ml.monsterid = @Id",
-                new { Id = id });
-            monster.LocationPool = await conn.QueryAsync<MonsterLocation>(
-                "SELECT ml.monsterid AS MonsterId, ml.locationid AS LocationId, loc.name AS Name FROM monster_location ml JOIN location loc ON loc.id = ml.locationid WHERE ml.monsterid = @Id",
-                new { Id = id });
-            return monster;
+            var row = await conn.QueryFirstOrDefaultAsync<EnrichedRow>(
+                EnrichedSqlBase + " WHERE m.id = @Id;", new { Id = id });
+            return row == null ? null : MapEnriched(row);
+        }
+
+        public async Task<Dictionary<int, Monster>> GetEnrichedMonstersAsync(int[] ids)
+        {
+            if (ids.Length == 0) return new Dictionary<int, Monster>();
+            using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            var rows = await conn.QueryAsync<EnrichedRow>(
+                EnrichedSqlBase + " WHERE m.id = ANY(@Ids);", new { Ids = ids });
+            return rows.ToDictionary(r => r.Id, r => MapEnriched(r));
         }
 
         public async Task UpdateMonsterAsync(int id, MonsterCommand monsterCommand)
@@ -478,25 +533,87 @@ namespace DeepwokendleApi.Repositories
             return true;
         }
 
+        public async Task<MonsterSuggestion?> GetSuggestionByIdAsync(int id, string username)
+        {
+            using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            const string sql = @"
+                SELECT
+                    m.id             AS Id,
+                    m.name           AS Name,
+                    m.picture        AS Picture,
+                    m.humanoid       AS Humanoid,
+                    m.pending        AS Pending,
+                    m.useratcreation AS UserAtCreation,
+                    m.created_at     AS CreatedAt,
+                    m.updated_at     AS UpdatedAt,
+                    e.name           AS Element,
+                    c.name           AS Category,
+                    (SELECT COALESCE(string_agg(l.name, ',' ORDER BY l.name), '')
+                     FROM monster_loot ml JOIN loot l ON l.id = ml.lootid
+                     WHERE ml.monsterid = m.id)   AS Loots,
+                    (SELECT COALESCE(string_agg(loc.name, ',' ORDER BY loc.name), '')
+                     FROM monster_location mloc JOIN location loc ON loc.id = mloc.locationid
+                     WHERE mloc.monsterid = m.id) AS Locations,
+                    COALESCE(v.like_count, 0)    AS LikeCount,
+                    COALESCE(v.dislike_count, 0) AS DislikeCount,
+                    uv.vote AS UserVote,
+                    (SELECT COALESCE(string_agg(vl.username, ',' ORDER BY vl.username), '')
+                     FROM (SELECT username FROM monster_vote WHERE monster_id = m.id AND vote = 1 ORDER BY username LIMIT 3) vl) AS LastLikers,
+                    (SELECT COALESCE(string_agg(vd.username, ',' ORDER BY vd.username), '')
+                     FROM (SELECT username FROM monster_vote WHERE monster_id = m.id AND vote = -1 ORDER BY username LIMIT 3) vd) AS LastDislikers
+                FROM monster m
+                JOIN element e  ON e.id = m.elementid
+                JOIN category c ON c.id = m.categoryid
+                LEFT JOIN (
+                    SELECT monster_id,
+                           COUNT(CASE WHEN vote = 1  THEN 1 END)::int AS like_count,
+                           COUNT(CASE WHEN vote = -1 THEN 1 END)::int AS dislike_count
+                    FROM monster_vote GROUP BY monster_id
+                ) v ON v.monster_id = m.id
+                LEFT JOIN (
+                    SELECT monster_id, COUNT(*)::int AS report_count
+                    FROM monster_report GROUP BY monster_id
+                ) r ON r.monster_id = m.id
+                LEFT JOIN (
+                    SELECT monster_id, vote FROM monster_vote WHERE username = @Username
+                ) uv ON uv.monster_id = m.id
+                WHERE m.id = @Id
+                  AND m.pending = true
+                  AND COALESCE(r.report_count, 0) < 5;
+            ";
+
+            var row = await conn.QueryFirstOrDefaultAsync<MonsterSuggestionRow>(sql, new { Id = id, Username = username ?? string.Empty });
+            if (row == null) return null;
+
+            return new MonsterSuggestion
+            {
+                Id             = row.Id,
+                Name           = row.Name,
+                Picture        = row.Picture,
+                Humanoid       = row.Humanoid,
+                Pending        = row.Pending,
+                UserAtCreation = row.UserAtCreation,
+                CreatedAt      = row.CreatedAt,
+                UpdatedAt      = row.UpdatedAt,
+                Element        = row.Element,
+                Category       = row.Category,
+                Loots          = row.Loots.Length > 0 ? [.. row.Loots.Split(',')] : [],
+                Locations      = row.Locations.Length > 0 ? [.. row.Locations.Split(',')] : [],
+                LikeCount      = row.LikeCount,
+                DislikeCount   = row.DislikeCount,
+                UserVote       = row.UserVote,
+                LastLikers     = row.LastLikers.Length > 0 ? [.. row.LastLikers.Split(',')] : [],
+                LastDislikers  = row.LastDislikers.Length > 0 ? [.. row.LastDislikers.Split(',')] : [],
+            };
+        }
+
         public async Task<Monster?> GetUserSuggestionEnrichedAsync(int id, string username)
         {
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            var monster = await conn.QueryFirstOrDefaultAsync<Monster>(
-                @"SELECT id, name, picture, mainhabitat AS MainHabitat, humanoid, elementid AS ElementId, categoryid AS CategoryId
-                  FROM monster WHERE id = @Id AND useratcreation = @Username AND pending = true",
+            var row = await conn.QueryFirstOrDefaultAsync<EnrichedRow>(
+                EnrichedSqlBase + " WHERE m.id = @Id AND m.useratcreation = @Username AND m.pending = true;",
                 new { Id = id, Username = username });
-            if (monster == null) return null;
-            monster.Element = await conn.QueryFirstOrDefaultAsync<Element>(
-                "SELECT id, name FROM element WHERE id = @Id", new { Id = monster.ElementId });
-            monster.Category = await conn.QueryFirstOrDefaultAsync<Category>(
-                "SELECT id, name FROM category WHERE id = @Id", new { Id = monster.CategoryId });
-            monster.LootPool = await conn.QueryAsync<MonsterLoot>(
-                "SELECT ml.monsterid AS MonsterId, ml.lootid AS LootId, l.name AS LootName FROM monster_loot ml JOIN loot l ON l.id = ml.lootid WHERE ml.monsterid = @Id",
-                new { Id = id });
-            monster.LocationPool = await conn.QueryAsync<MonsterLocation>(
-                "SELECT ml.monsterid AS MonsterId, ml.locationid AS LocationId, loc.name AS Name FROM monster_location ml JOIN location loc ON loc.id = ml.locationid WHERE ml.monsterid = @Id",
-                new { Id = id });
-            return monster;
+            return row == null ? null : MapEnriched(row);
         }
     }
 }

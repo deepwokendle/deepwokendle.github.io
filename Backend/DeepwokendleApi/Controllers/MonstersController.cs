@@ -482,6 +482,14 @@ namespace DeepwokendleApi.Controllers
             return NoContent();
         }
 
+        [HttpGet("{id}/suggestion")]
+        public async Task<IActionResult> GetSuggestionById(int id)
+        {
+            var username = User.Identity?.Name ?? string.Empty;
+            var item = await _monsterService.GetSuggestionByIdAsync(id, username);
+            return item != null ? Ok(item) : NotFound();
+        }
+
         [HttpDelete("{id}/my-suggestion")]
         [Authorize]
         public async Task<IActionResult> DeleteMySuggestion(int id)
