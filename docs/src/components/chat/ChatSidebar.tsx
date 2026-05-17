@@ -222,7 +222,10 @@ export default function ChatSidebar({ open, messages, onSendMessage, loadOlderMe
                 systemMessages.map((msg, i) => (
                   <div key={i} className="chat-msg chat-msg-system">
                     <p>
-                      <span dangerouslySetInnerHTML={{ __html: escapeHtml(msg.message) }} />
+                      <span
+                        style={msg.isLoss ? { color: '#c0392b' } : undefined}
+                        dangerouslySetInnerHTML={{ __html: escapeHtml(msg.message) }}
+                      />
                     </p>
                   </div>
                 ))

@@ -15,6 +15,7 @@ namespace DeepwokendleApi.Interfaces
         Task<int?> GetIncompleteGeneratedMonsterIdByUserAsync(string username);
         Task InsertGeneratedMonsterAsync(string username, int monsterId);
         Task<Monster> GetEnrichedMonsterAsync(int id);
+        Task<Dictionary<int, Monster>> GetEnrichedMonstersAsync(int[] ids);
         Task UpdateMonsterAsync(int id, MonsterCommand monsterCommand);
         Task UpdateMonsterRelationsAsync(int monsterId, List<int> locationsId, List<int> lootsId);
         Task DeleteMonsterAsync(int id);

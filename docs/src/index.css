@@ -1082,7 +1082,7 @@ input:focus {
 .chatAgreementOverlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.9);
     z-index: 10;
     display: flex;
     align-items: center;
@@ -1103,13 +1103,13 @@ input:focus {
 .chatAgreementTitle {
     font-size: 1.1rem;
     font-weight: bold;
-    color: black;
+    color: var(--container-background);
     margin: 0;
 }
 
 .chatAgreementText {
     font-size: 0.82rem;
-    color: black;
+    color: var(--container-background);
     line-height: 1.5;
     margin: 0;
 }
@@ -1121,7 +1121,7 @@ input:focus {
     cursor: pointer;
     font-family: 'Fondamento';
     font-size: 0.9rem;
-    opacity:0.8;
+    opacity:0.6;
     transition: 200ms ease-in-out;
 }
 

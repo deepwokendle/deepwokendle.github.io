@@ -13,6 +13,7 @@ namespace DeepwokendleApi.Interfaces
         Task<object> GetDailyMonsterAsync();
         Task<int?> GetInfiniteMonsterAsync(string username);
         Task<Monster> GetEnrichedMonsterAsync(int id);
+        Task<Dictionary<int, Monster>> GetEnrichedMonstersAsync(int[] ids);
         Task<int?> GetCurrentDailyMonsterIdAsync();
         Task<int?> GetInfiniteMonsterIdForUserAsync(string username);
         Task UpdateMonsterAsync(int id, MonsterCommand dto);

@@ -46,7 +46,7 @@ function voterTooltip(voters: string[], count: number, action: 'liked' | 'dislik
 }
 
 const SHARE_BASE = (id: number) =>
-  `I just made an NPC suggestion for Deepwokendle. Come upvote it! https://www.deepwokendle.com/suggestions?suggestionId=${id}`;
+  `Check out this NPC suggestion for Deepwokendle. Upvote it! https://www.deepwokendle.com/suggestions?suggestionId=${id}`;
 
 const SHARE_TWITTER = (id: number) => `${SHARE_BASE(id)} #deepwoken #deepwokendle`;
 
@@ -69,6 +69,9 @@ export default function SuggestionsPage() {
 
   const [shareTarget, setShareTarget] = useState<MonsterSuggestion | null>(null);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [lbScale, setLbScale] = useState(1);
+  const [lbOffset, setLbOffset] = useState({ x: 0, y: 0 });
+  const lbDrag = useRef<{ startX: number; startY: number; ox: number; oy: number } | null>(null);
 
   // undefined = closed, null = create mode, MonsterEnriched = edit mode
   const [formTarget, setFormTarget] = useState<MonsterEnriched | null | undefined>(undefined);
@@ -282,7 +285,7 @@ export default function SuggestionsPage() {
         {s.picture && (
           <button
             className={styles.eyeBtn}
-            onClick={() => setLightboxUrl(s.picture)}
+            onClick={() => { setLightboxUrl(s.picture); setLbScale(1); setLbOffset({ x: 0, y: 0 }); }}
             aria-label="View full image"
           >
             <i className="fas fa-eye" />
@@ -481,8 +484,51 @@ export default function SuggestionsPage() {
       )}
 
       {lightboxUrl && (
-        <div className={styles.lightboxOverlay} onClick={() => setLightboxUrl(null)}>
-          <img className={styles.lightboxImg} src={lightboxUrl} alt="Full preview" onClick={e => e.stopPropagation()} />
+        <div
+          className={styles.lightboxOverlay}
+          style={{ cursor: lbScale > 1 ? (lbDrag.current ? 'grabbing' : 'grab') : 'default' }}
+          onWheel={e => {
+            e.preventDefault();
+            setLbScale(prev => Math.min(8, Math.max(1, prev - e.deltaY * 0.002)));
+          }}
+          onMouseDown={e => {
+            if (e.button !== 0) return;
+            lbDrag.current = { startX: e.clientX, startY: e.clientY, ox: lbOffset.x, oy: lbOffset.y };
+          }}
+          onMouseMove={e => {
+            if (!lbDrag.current) return;
+            setLbOffset({ x: lbDrag.current.ox + e.clientX - lbDrag.current.startX, y: lbDrag.current.oy + e.clientY - lbDrag.current.startY });
+          }}
+          onMouseUp={() => { lbDrag.current = null; }}
+          onMouseLeave={() => { lbDrag.current = null; }}
+        >
+          <div
+            className={styles.lightboxCanvas}
+            style={{ transform: `translate(${lbOffset.x}px, ${lbOffset.y}px) scale(${lbScale})` }}
+          >
+            <img className={styles.lightboxImg} src={lightboxUrl} alt="Full preview" />
+          </div>
+
+          <button
+            className={styles.lightboxClose}
+            onClick={() => { setLightboxUrl(null); setLbScale(1); setLbOffset({ x: 0, y: 0 }); }}
+            aria-label="Close"
+          >
+            <i className="fas fa-times" />
+          </button>
+
+          <div className={styles.lightboxControls}>
+            <button className={styles.lightboxBtn} onClick={() => setLbScale(s => Math.min(8, s + 0.5))} aria-label="Zoom in">
+              <i className="fas fa-plus" />
+            </button>
+            <span className={styles.lightboxZoomLabel}>{Math.round(lbScale * 100)}%</span>
+            <button className={styles.lightboxBtn} onClick={() => setLbScale(s => Math.max(1, s - 0.5))} aria-label="Zoom out">
+              <i className="fas fa-minus" />
+            </button>
+            <button className={styles.lightboxBtn} onClick={() => { setLbScale(1); setLbOffset({ x: 0, y: 0 }); }} aria-label="Reset">
+              <i className="fas fa-arrows-rotate" />
+            </button>
+          </div>
         </div>
       )}
     </>

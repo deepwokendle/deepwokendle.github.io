@@ -115,28 +115,20 @@ namespace DeepwokendleApi.Repositories
         public async Task UpdateUserStreakAsync(string user)
         {
             using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            var sql = new StringBuilder();
-            sql.AppendLine("UPDATE users");
-            sql.AppendLine("SET");
-            sql.AppendLine("    curr_streak = curr_streak + 1,");
-            sql.AppendLine("    max_streak = GREATEST(max_streak, curr_streak + 1)");
-            sql.AppendLine("WHERE username = @User;");
-            await Task.FromResult(connection.Execute(sql.ToString(), new { User = user }));
+            await connection.ExecuteAsync(@"
+                UPDATE users
+                SET curr_streak = curr_streak + 1,
+                    max_streak = GREATEST(max_streak, curr_streak + 1)
+                WHERE username = @User;", new { User = user });
         }
 
         public async Task UpdateUserCurrStreakAsync(string user)
         {
             using var connection = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            var sql = new StringBuilder();
-            sql.AppendLine("UPDATE users");
-            sql.AppendLine("SET");
-            sql.AppendLine("    curr_streak = 0");
-            sql.AppendLine("WHERE username = @User;");
-            sql.AppendLine("UPDATE generated_monster");
-            sql.AppendLine("SET");
-            sql.AppendLine("    completed = true");
-            sql.AppendLine("WHERE user_at_creation = @User and completed = false;");
-            await Task.FromResult(connection.Execute(sql.ToString(), new { User = user }));
+            await connection.ExecuteAsync(@"
+                UPDATE users SET curr_streak = 0 WHERE username = @User;
+                UPDATE generated_monster SET completed = true WHERE user_at_creation = @User AND completed = false;",
+                new { User = user });
         }
 
         public async Task<List<int>> GetCorrectlyGuessedMonsterIdsAsync(string username)

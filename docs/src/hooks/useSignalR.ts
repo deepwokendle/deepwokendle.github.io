@@ -8,6 +8,7 @@ export interface ChatMessage {
   user: string;
   message: string;
   isSystem?: boolean;
+  isLoss?: boolean;
 }
 
 const HISTORY_PAGE = 10;
@@ -88,6 +89,9 @@ export function useSignalR() {
     });
     conn.on('ReceiveSystemMessage', (message: string) => {
       addMessage({ user: 'System', message, isSystem: true });
+    });
+    conn.on('ReceiveSystemLossMessage', (message: string) => {
+      addMessage({ user: 'System', message, isSystem: true, isLoss: true });
     });
     conn.on('RateLimited', (reason: string) => {
       showToast.error(reason);
