@@ -36,6 +36,7 @@ export function useMonsters() {
         category: m.category?.name ?? 'Unknown',
         gives: m.lootPool?.map((l: any) => l.lootName) ?? [],
         locations: m.locationPool?.map((loc: any) => loc.name) ?? [],
+        userAtCreation: m.userAtCreation ?? undefined,
       }));
       cachedMonsters = mapped;
       setMonsters(mapped);

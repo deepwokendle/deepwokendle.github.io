@@ -237,6 +237,9 @@ export default function AdminMonstersPage() {
                 <span className={styles.cardName}>{m.name}</span>
                 <span className={styles.cardMeta}>{nameOf(m.element)} · {nameOf(m.category)}</span>
                 <span className={styles.cardMeta}>{m.humanoid ? 'Humanoid' : 'Non-humanoid'}</span>
+                {m.userAtCreation && (
+                  <span className={styles.cardMeta}>Created by: <strong>{m.userAtCreation}</strong></span>
+                )}
               </div>
             </div>
           ))}

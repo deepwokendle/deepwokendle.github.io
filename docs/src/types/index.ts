@@ -8,6 +8,7 @@ export interface Monster {
   category: string;
   gives: string[];
   locations: string[];
+  userAtCreation?: string;
 }
 
 export interface PreviousGuess {
@@ -61,6 +62,7 @@ export interface MonsterAdmin {
   humanoid: boolean;
   mainHabitat: string;
   pending: boolean;
+  userAtCreation?: string;
   elementId: number;
   categoryId: number;
   element: string;

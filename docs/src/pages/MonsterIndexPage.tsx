@@ -163,7 +163,12 @@ export default function MonsterIndexPage() {
                       ? <img src={monster.picture} alt={monster.name} className="monster-card-img" />
                       : <div className="monster-card-locked"><span className="question-mark">?</span></div>
                     }
-                    <span className="monster-card-name">{monster.name}</span>
+                    <div className="monster-card-bottom">
+                      <span className="monster-card-name">{monster.name}</span>
+                      {unlocked && monster.userAtCreation && (
+                        <span className="monster-card-creator">by {monster.userAtCreation}</span>
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -191,6 +196,9 @@ export default function MonsterIndexPage() {
           <div className="monster-preview-modal border" onClick={e => e.stopPropagation()}>
             <button className="monster-preview-close" onClick={() => setPreviewMonster(null)}>✕</button>
             <h3 className="monster-preview-title">{previewMonster.name}</h3>
+            {previewMonster.userAtCreation && (
+              <p className="monster-preview-creator">Created by: {previewMonster.userAtCreation}</p>
+            )}
             <div
               className="rowsContainer"
               style={{ maxHeight: 'none', marginBottom: 0, overflowY: 'visible', overflowX: 'auto' }}

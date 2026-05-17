@@ -86,7 +86,7 @@ namespace DeepwokendleApi.Repositories
         public async Task<IEnumerable<Monster>> GetAllMonstersAsync()
         {
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            const string sql = "SELECT id, name, picture, mainhabitat AS MainHabitat, humanoid, elementid AS ElementId, categoryid AS CategoryId FROM monster where pending = false";
+            const string sql = "SELECT id, name, picture, mainhabitat AS MainHabitat, humanoid, elementid AS ElementId, categoryid AS CategoryId, useratcreation AS UserAtCreation FROM monster where pending = false";
             return await conn.QueryAsync<Monster>(sql);
         }
 
@@ -190,7 +190,8 @@ namespace DeepwokendleApi.Repositories
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
             const string sql = @"
                 SELECT id, name, picture, mainhabitat AS MainHabitat, humanoid,
-                       elementid AS ElementId, categoryid AS CategoryId, pending
+                       elementid AS ElementId, categoryid AS CategoryId, pending,
+                       useratcreation AS UserAtCreation
                 FROM monster
                 ORDER BY id;
             ";

@@ -1424,14 +1424,28 @@ button:is(:disabled) {
     user-select: none;
 }
 
-.monster-card-name {
+.monster-card-bottom {
     position: absolute;
     bottom: 5px;
     left: 7px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    pointer-events: none;
+}
+
+.monster-card-name {
     color: white;
     font-size: clamp(0.5rem, 3.4vw, 0.75rem);
     text-shadow: 0 0 5px #000, 0 0 5px #000;
-    pointer-events: none;
+    line-height: 1.2;
+}
+
+.monster-card-creator {
+    color: white;
+    font-size: clamp(0.38rem, 2.6vw, 0.58rem);
+    text-shadow: 0 0 5px #000, 0 0 5px #000;
+    opacity: 0.8;
     line-height: 1.2;
 }
 
@@ -1616,6 +1630,13 @@ button:is(:disabled) {
     letter-spacing: 1.5px;
     text-align: center;
     margin: 0;
+}
+
+.monster-preview-creator {
+    text-align: center;
+    font-size: 0.72rem;
+    color: rgba(4, 16, 13, 0.55);
+    margin: 2px 0 0;
 }
 
 .monster-preview-close {

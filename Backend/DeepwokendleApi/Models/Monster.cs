@@ -7,6 +7,7 @@ public class Monster
     public string MainHabitat { get; set; }
     public bool Humanoid { get; set; }
     public bool Pending { get; set; }
+    public string? UserAtCreation { get; set; }
     public int ElementId { get; set; }
     public Element Element { get; set; }
     public int CategoryId { get; set; }
