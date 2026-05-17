@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useOverlaySync } from '../hooks/useOverlaySync';
 import Tooltip from '../components/common/Tooltip';
@@ -11,6 +12,7 @@ import {
   apiReportMonsterSuggestion,
   apiGetMySuggestionEnriched,
   apiDeleteMySuggestion,
+  apiFetchSuggestionById,
 } from '../services/api';
 import { showToast } from '../utils/toast';
 import type { MonsterEnriched, MonsterSuggestion } from '../types';
@@ -43,11 +45,20 @@ function voterTooltip(voters: string[], count: number, action: 'liked' | 'dislik
   return `${base} and ${rest} other${rest > 1 ? 's' : ''} have ${action} this`;
 }
 
+const SHARE_BASE = (id: number) =>
+  `I just made an NPC suggestion for Deepwokendle. Come upvote it! https://www.deepwokendle.com/suggestions?suggestionId=${id}`;
+
+const SHARE_TWITTER = (id: number) => `${SHARE_BASE(id)} #deepwoken #deepwokendle`;
+
 export default function SuggestionsPage() {
   const { isLoggedIn, waitForLogin, openLoginModal, username } = useAuth();
   useOverlaySync();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const pinnedId = searchParams.get('suggestionId') ? Number(searchParams.get('suggestionId')) : null;
+
   const [suggestions, setSuggestions] = useState<MonsterSuggestion[]>([]);
+  const [pinnedSuggestion, setPinnedSuggestion] = useState<MonsterSuggestion | null>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [sort, setSort] = useState<Sort>('likes');
@@ -56,9 +67,14 @@ export default function SuggestionsPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
+  const [shareTarget, setShareTarget] = useState<MonsterSuggestion | null>(null);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
   // undefined = closed, null = create mode, MonsterEnriched = edit mode
   const [formTarget, setFormTarget] = useState<MonsterEnriched | null | undefined>(undefined);
   const [formLoading, setFormLoading] = useState(false);
+
+  const pinnedCardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search), 400);
@@ -66,6 +82,22 @@ export default function SuggestionsPage() {
   }, [search]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // Fetch pinned suggestion from URL param
+  useEffect(() => {
+    if (!pinnedId || showMine) { setPinnedSuggestion(null); return; }
+    apiFetchSuggestionById(pinnedId)
+      .then(r => r.ok ? r.json() : null)
+      .then((data: MonsterSuggestion | null) => setPinnedSuggestion(data))
+      .catch(() => setPinnedSuggestion(null));
+  }, [pinnedId, showMine]);
+
+  // Auto-scroll to pinned card after it renders
+  useEffect(() => {
+    if (pinnedSuggestion && pinnedCardRef.current) {
+      pinnedCardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [pinnedSuggestion]);
 
   const fetchCommunity = useCallback(async (p: number, s: Sort, q: string) => {
     setLoading(true);
@@ -132,20 +164,23 @@ export default function SuggestionsPage() {
     }
     const newVote = suggestion.userVote === vote ? 0 : vote;
     const user = username ?? '';
-    setSuggestions(prev => prev.map(s =>
-      s.id !== suggestion.id ? s : {
-        ...s,
-        likeCount:    s.likeCount    + (newVote === 1  ? 1 : 0) - (s.userVote === 1  ? 1 : 0),
-        dislikeCount: s.dislikeCount + (newVote === -1 ? 1 : 0) - (s.userVote === -1 ? 1 : 0),
-        userVote: newVote === 0 ? null : newVote,
-        lastLikers:    newVote === 1     ? [...new Set([...s.lastLikers, user])].slice(0, 3)
-                     : s.userVote === 1  ? s.lastLikers.filter(u => u !== user)
-                                        : s.lastLikers,
-        lastDislikers: newVote === -1    ? [...new Set([...s.lastDislikers, user])].slice(0, 3)
-                     : s.userVote === -1 ? s.lastDislikers.filter(u => u !== user)
-                                        : s.lastDislikers,
-      }
-    ));
+
+    const applyVote = (s: MonsterSuggestion): MonsterSuggestion => s.id !== suggestion.id ? s : {
+      ...s,
+      likeCount:    s.likeCount    + (newVote === 1  ? 1 : 0) - (s.userVote === 1  ? 1 : 0),
+      dislikeCount: s.dislikeCount + (newVote === -1 ? 1 : 0) - (s.userVote === -1 ? 1 : 0),
+      userVote: newVote === 0 ? null : newVote,
+      lastLikers:    newVote === 1     ? [...new Set([...s.lastLikers, user])].slice(0, 3)
+                   : s.userVote === 1  ? s.lastLikers.filter(u => u !== user)
+                                      : s.lastLikers,
+      lastDislikers: newVote === -1    ? [...new Set([...s.lastDislikers, user])].slice(0, 3)
+                   : s.userVote === -1 ? s.lastDislikers.filter(u => u !== user)
+                                      : s.lastDislikers,
+    };
+
+    setSuggestions(prev => prev.map(applyVote));
+    if (pinnedSuggestion?.id === suggestion.id) setPinnedSuggestion(prev => prev ? applyVote(prev) : prev);
+
     const res = await apiVoteMonsterSuggestion(suggestion.id, newVote);
     if (!res.ok) {
       showToast.error('Failed to vote.');
@@ -204,11 +239,144 @@ export default function SuggestionsPage() {
     if (showMine) fetchMine(); else fetchCommunity(page, sort, debouncedSearch);
   };
 
+  const handleShare = (s: MonsterSuggestion) => setShareTarget(s);
+
+  const handleCopy = async () => {
+    if (!shareTarget) return;
+    try {
+      await navigator.clipboard.writeText(SHARE_BASE(shareTarget.id));
+      showToast.success('Copied to clipboard!');
+    } catch {
+      showToast.error('Failed to copy.');
+    }
+  };
+
+  const handleTwitter = () => {
+    if (!shareTarget) return;
+    const text = encodeURIComponent(SHARE_TWITTER(shareTarget.id));
+    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank', 'noopener,noreferrer');
+  };
+
   const displayedSuggestions = showMine && search.trim()
     ? suggestions.filter(s =>
         s.name.toLowerCase().includes(search.toLowerCase()) ||
         s.userAtCreation.toLowerCase().includes(search.toLowerCase()))
     : suggestions;
+
+  // Deduplicate: remove the pinned item from the regular list so it doesn't appear twice
+  const regularSuggestions = pinnedSuggestion && !showMine
+    ? displayedSuggestions.filter(s => s.id !== pinnedSuggestion.id)
+    : displayedSuggestions;
+
+  const renderCard = (s: MonsterSuggestion, isPinned = false) => (
+    <div
+      key={s.id}
+      ref={isPinned ? pinnedCardRef : undefined}
+      className={`${styles.card} border`}
+    >
+      <div className={`${styles.cardImage} border`}>
+        {s.picture
+          ? <img src={s.picture} alt={s.name} />
+          : <span className={styles.noImage}>No image</span>
+        }
+        {s.picture && (
+          <button
+            className={styles.eyeBtn}
+            onClick={() => setLightboxUrl(s.picture)}
+            aria-label="View full image"
+          >
+            <i className="fas fa-eye" />
+          </button>
+        )}
+        {showMine && s.pending && (
+          <div className={styles.cardOwnerActions}>
+            <Tooltip content="Edit" placement="top">
+              <button
+                className={styles.cardOwnerBtn}
+                onClick={() => handleOpenEdit(s)}
+                disabled={formLoading}
+              >
+                <i className="fas fa-pen" />
+              </button>
+            </Tooltip>
+            <Tooltip content="Delete" placement="top">
+              <button
+                className={`${styles.cardOwnerBtn} ${styles.cardOwnerBtnDelete}`}
+                onClick={() => handleDelete(s.id)}
+              >
+                <i className="fas fa-trash" />
+              </button>
+            </Tooltip>
+          </div>
+        )}
+      </div>
+
+      <div className={styles.cardContent}>
+        <div className={styles.cardNameRow}>
+          <h3 className={styles.cardName}>{s.name}</h3>
+          {isPinned && <span className={styles.pinnedBadge}>Shared</span>}
+          {showMine && !s.pending && (
+            <span className={styles.publishedBadge}>Published</span>
+          )}
+          {s.updatedAt && (
+            <Tooltip content={`Edited ${timeAgo(s.updatedAt)}`}>
+              <span className={styles.editedBadge}>(edited)</span>
+            </Tooltip>
+          )}
+          {s.createdAt && (
+            <span className={styles.timeAgo}>{timeAgo(s.createdAt)}</span>
+          )}
+        </div>
+        <div className={styles.cardMeta}>
+          <strong>{s.element}</strong> · <strong>{s.category}</strong>
+          {' '}· {s.humanoid ? 'Humanoid' : 'Non-humanoid'}
+        </div>
+        <div className={styles.cardMeta}>
+          Submitted by <strong>{s.userAtCreation}</strong>
+        </div>
+
+        <div className={styles.cardTags}>
+          {s.locations.map(loc => (
+            <Tooltip key={loc} content="Location">
+              <span className={styles.tag}>{loc}</span>
+            </Tooltip>
+          ))}
+          {s.loots.map(l => (
+            <Tooltip key={l} content="Loot">
+              <span className={styles.tag}>{l}</span>
+            </Tooltip>
+          ))}
+        </div>
+
+        <div className={styles.cardFooter}>
+          <Tooltip content={voterTooltip(s.lastLikers, s.likeCount, 'liked')}>
+            <button
+              className={`${styles.voteBtn}${s.userVote === 1 ? ` ${styles.likeActive}` : ''}`}
+              onClick={() => handleVote(s, 1)}
+            >
+              <i className="fas fa-thumbs-up" /> {s.likeCount}
+            </button>
+          </Tooltip>
+          <Tooltip content={voterTooltip(s.lastDislikers, s.dislikeCount, 'disliked')}>
+            <button
+              className={`${styles.voteBtn}${s.userVote === -1 ? ` ${styles.dislikeActive}` : ''}`}
+              onClick={() => handleVote(s, -1)}
+            >
+              <i className="fas fa-thumbs-down" /> {s.dislikeCount}
+            </button>
+          </Tooltip>
+          <div className={styles.shareReportRow}>
+            <button className={styles.shareBtn} onClick={() => handleShare(s)}>
+              <i className="fas fa-share-nodes" /> Share
+            </button>
+            <button className={styles.reportBtn} onClick={() => handleReport(s.id)}>
+              <i className="fas fa-flag" /> Report
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -258,102 +426,16 @@ export default function SuggestionsPage() {
               <div key={i} className={`${styles.skeletonCard} skeleton-pulse border`} />
             ))}
           </div>
-        ) : displayedSuggestions.length === 0 ? (
-          <p className={styles.empty}>
-            {showMine ? "You haven't submitted any monsters yet." : 'No suggestions found.'}
-          </p>
         ) : (
           <div className={styles.list}>
-            {displayedSuggestions.map(s => (
-              <div key={s.id} className={`${styles.card} border`}>
-                <div className={`${styles.cardImage} border`}>
-                  {s.picture
-                    ? <img src={s.picture} alt={s.name} />
-                    : <span className={styles.noImage}>No image</span>
-                  }
-                  {showMine && s.pending && (
-                    <div className={styles.cardOwnerActions}>
-                      <Tooltip content="Edit" placement="top">
-                        <button
-                          className={styles.cardOwnerBtn}
-                          onClick={() => handleOpenEdit(s)}
-                          disabled={formLoading}
-                        >
-                          <i className="fas fa-pen" />
-                        </button>
-                      </Tooltip>
-                      <Tooltip content="Delete" placement="top">
-                        <button
-                          className={`${styles.cardOwnerBtn} ${styles.cardOwnerBtnDelete}`}
-                          onClick={() => handleDelete(s.id)}
-                        >
-                          <i className="fas fa-trash" />
-                        </button>
-                      </Tooltip>
-                    </div>
-                  )}
-                </div>
-
-                <div className={styles.cardContent}>
-                  <div className={styles.cardNameRow}>
-                    <h3 className={styles.cardName}>{s.name}</h3>
-                    {showMine && !s.pending && (
-                      <span className={styles.publishedBadge}>Published</span>
-                    )}
-                    {s.updatedAt && (
-                      <Tooltip content={`Edited ${timeAgo(s.updatedAt)}`}>
-                        <span className={styles.editedBadge}>(edited)</span>
-                      </Tooltip>
-                    )}
-                    {s.createdAt && (
-                      <span className={styles.timeAgo}>{timeAgo(s.createdAt)}</span>
-                    )}
-                  </div>
-                  <div className={styles.cardMeta}>
-                    <strong>{s.element}</strong> · <strong>{s.category}</strong>
-                    {' '}· {s.humanoid ? 'Humanoid' : 'Non-humanoid'}
-                  </div>
-                  <div className={styles.cardMeta}>
-                    Submitted by <strong>{s.userAtCreation}</strong>
-                  </div>
-
-                  <div className={styles.cardTags}>
-                    {s.locations.map(loc => (
-                      <Tooltip key={loc} content="Location">
-                        <span className={styles.tag}>{loc}</span>
-                      </Tooltip>
-                    ))}
-                    {s.loots.map(l => (
-                      <Tooltip key={l} content="Loot">
-                        <span className={styles.tag}>{l}</span>
-                      </Tooltip>
-                    ))}
-                  </div>
-
-                  <div className={styles.cardFooter}>
-                    <Tooltip content={voterTooltip(s.lastLikers, s.likeCount, 'liked')}>
-                      <button
-                        className={`${styles.voteBtn}${s.userVote === 1 ? ` ${styles.likeActive}` : ''}`}
-                        onClick={() => handleVote(s, 1)}
-                      >
-                        <i className="fas fa-thumbs-up" /> {s.likeCount}
-                      </button>
-                    </Tooltip>
-                    <Tooltip content={voterTooltip(s.lastDislikers, s.dislikeCount, 'disliked')}>
-                      <button
-                        className={`${styles.voteBtn}${s.userVote === -1 ? ` ${styles.dislikeActive}` : ''}`}
-                        onClick={() => handleVote(s, -1)}
-                      >
-                        <i className="fas fa-thumbs-down" /> {s.dislikeCount}
-                      </button>
-                    </Tooltip>
-                    <button className={styles.reportBtn} onClick={() => handleReport(s.id)}>
-                      <i className="fas fa-flag" /> Report
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {pinnedSuggestion && !showMine && renderCard(pinnedSuggestion, true)}
+            {regularSuggestions.length === 0 && !pinnedSuggestion ? (
+              <p className={styles.empty}>
+                {showMine ? "You haven't submitted any monsters yet." : 'No suggestions found.'}
+              </p>
+            ) : (
+              regularSuggestions.map(s => renderCard(s))
+            )}
           </div>
         )}
 
@@ -378,6 +460,30 @@ export default function SuggestionsPage() {
           onClose={() => setFormTarget(undefined)}
           onSaved={handleFormSaved}
         />
+      )}
+
+      {shareTarget && (
+        <div className={styles.shareOverlay} onClick={() => setShareTarget(null)}>
+          <div className={`${styles.shareModal} border`} onClick={e => e.stopPropagation()}>
+            <p className={styles.shareTitle}>Share "{shareTarget.name}"</p>
+            <p className={styles.shareText}>{SHARE_BASE(shareTarget.id)}</p>
+            <div className={styles.shareActions}>
+              <button className={styles.shareIconBtn} onClick={handleCopy}>
+                <i className="far fa-copy" /> Copy
+              </button>
+              <button className={styles.shareIconBtn} onClick={handleTwitter}>
+                <i className="fab fa-x-twitter" /> Post
+              </button>
+            </div>
+            <button className={styles.shareClose} onClick={() => setShareTarget(null)}>Close</button>
+          </div>
+        </div>
+      )}
+
+      {lightboxUrl && (
+        <div className={styles.lightboxOverlay} onClick={() => setLightboxUrl(null)}>
+          <img className={styles.lightboxImg} src={lightboxUrl} alt="Full preview" onClick={e => e.stopPropagation()} />
+        </div>
       )}
     </>
   );

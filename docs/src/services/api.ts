@@ -181,3 +181,6 @@ export const apiUpdateMySuggestion = (id: number, payload: object) =>
 
 export const apiDeleteMySuggestion = (id: number) =>
   apiFetch(`/Monsters/${id}/my-suggestion`, { method: 'DELETE' });
+
+export const apiFetchSuggestionById = (id: number) =>
+  apiFetch(`/Monsters/${id}/suggestion`);

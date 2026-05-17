@@ -33,5 +33,6 @@ namespace DeepwokendleApi.Interfaces
         Task<bool> UpdateUserSuggestionAsync(int id, MonsterCommand cmd, string username);
         Task<bool> DeleteUserSuggestionAsync(int id, string username);
         Task<Monster?> GetUserSuggestionEnrichedAsync(int id, string username);
+        Task<MonsterSuggestion?> GetSuggestionByIdAsync(int id, string username);
     }
 }

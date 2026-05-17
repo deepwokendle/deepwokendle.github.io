@@ -115,4 +115,7 @@ public class MonsterService : IMonsterService
 
     public Task<Monster?> GetUserSuggestionEnrichedAsync(int id, string username)
         => _monsterRepository.GetUserSuggestionEnrichedAsync(id, username);
+
+    public Task<MonsterSuggestion?> GetSuggestionByIdAsync(int id, string username)
+        => _monsterRepository.GetSuggestionByIdAsync(id, username);
 }

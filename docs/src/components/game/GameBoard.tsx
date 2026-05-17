@@ -3,6 +3,7 @@ import GuessRow from './GuessRow';
 import GuessInput from './GuessInput';
 import type { GameMode, GuessRecord, Monster, SelectOption } from '../../types';
 import Tooltip from '../common/Tooltip';
+import { showToast } from '../../utils/toast';
 
 interface Props {
   mode: GameMode;
@@ -41,11 +42,18 @@ function Timer({ nextResetUtc, show }: { nextResetUtc: Date | null; show: boolea
   return <div id="resetTimer" style={{ color: 'black', whiteSpace: 'nowrap' }}>{text}</div>;
 }
 
+const GAME_COPY_TEXT = (tries: number | string) =>
+  `I just guessed today's Deepwokendle character in ${tries} tries!\nhttps://www.deepwokendle.com/`;
+
+const GAME_TWITTER_TEXT = (tries: number | string) =>
+  `${GAME_COPY_TEXT(tries)} #deepwoken #deepwokendle`;
+
 export default function GameBoard({
   mode, guesses, randomCharacter, amountsGuessed, infiniteStreak,
   isDisabled, isAwaitingNext, alreadyGuessed, nextResetUtc, monsters, onGuess, onInitInfinite,
 }: Props) {
   const [selected, setSelected] = useState<SelectOption | null>(null);
+  const [shareOpen, setShareOpen] = useState(false);
 
   const handleGuess = () => {
     if (!selected) return;
@@ -71,6 +79,23 @@ export default function GameBoard({
         attemptNumber: 0,
       }
     : null;
+
+  const showShare = mode === 'normal' && (isDisabled || alreadyGuessed);
+  const tries = amountsGuessed > 0 ? amountsGuessed : '?';
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(GAME_COPY_TEXT(tries));
+      showToast.success('Copied to clipboard!');
+    } catch {
+      showToast.error('Failed to copy.');
+    }
+  };
+
+  const handleTwitter = () => {
+    const text = encodeURIComponent(GAME_TWITTER_TEXT(tries));
+    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <>
@@ -138,6 +163,30 @@ export default function GameBoard({
             : ''}
         </div>
       </div>
+
+      {showShare && (
+        <button className="game-share-btn" onClick={() => setShareOpen(true)}>
+          <i className="fas fa-share-nodes" /> Share
+        </button>
+      )}
+
+      {shareOpen && (
+        <div className="game-share-overlay" onClick={() => setShareOpen(false)}>
+          <div className="game-share-modal border" onClick={e => e.stopPropagation()}>
+            <p className="game-share-title">Share your result</p>
+            <p className="game-share-text">{GAME_COPY_TEXT(tries)}</p>
+            <div className="game-share-actions">
+              <button className="game-share-icon-btn" onClick={handleCopy}>
+                <i className="far fa-copy" /> Copy
+              </button>
+              <button className="game-share-icon-btn" onClick={handleTwitter}>
+                <i className="fab fa-x-twitter" /> Post
+              </button>
+            </div>
+            <button className="game-share-close" onClick={() => setShareOpen(false)}>Close</button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

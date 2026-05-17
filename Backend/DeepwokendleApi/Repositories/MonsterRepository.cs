@@ -477,6 +477,80 @@ namespace DeepwokendleApi.Repositories
             return true;
         }
 
+        public async Task<MonsterSuggestion?> GetSuggestionByIdAsync(int id, string username)
+        {
+            using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            const string sql = @"
+                SELECT
+                    m.id             AS Id,
+                    m.name           AS Name,
+                    m.picture        AS Picture,
+                    m.humanoid       AS Humanoid,
+                    m.pending        AS Pending,
+                    m.useratcreation AS UserAtCreation,
+                    m.created_at     AS CreatedAt,
+                    m.updated_at     AS UpdatedAt,
+                    e.name           AS Element,
+                    c.name           AS Category,
+                    (SELECT COALESCE(string_agg(l.name, ',' ORDER BY l.name), '')
+                     FROM monster_loot ml JOIN loot l ON l.id = ml.lootid
+                     WHERE ml.monsterid = m.id)   AS Loots,
+                    (SELECT COALESCE(string_agg(loc.name, ',' ORDER BY loc.name), '')
+                     FROM monster_location mloc JOIN location loc ON loc.id = mloc.locationid
+                     WHERE mloc.monsterid = m.id) AS Locations,
+                    COALESCE(v.like_count, 0)    AS LikeCount,
+                    COALESCE(v.dislike_count, 0) AS DislikeCount,
+                    uv.vote AS UserVote,
+                    (SELECT COALESCE(string_agg(vl.username, ',' ORDER BY vl.username), '')
+                     FROM (SELECT username FROM monster_vote WHERE monster_id = m.id AND vote = 1 ORDER BY username LIMIT 3) vl) AS LastLikers,
+                    (SELECT COALESCE(string_agg(vd.username, ',' ORDER BY vd.username), '')
+                     FROM (SELECT username FROM monster_vote WHERE monster_id = m.id AND vote = -1 ORDER BY username LIMIT 3) vd) AS LastDislikers
+                FROM monster m
+                JOIN element e  ON e.id = m.elementid
+                JOIN category c ON c.id = m.categoryid
+                LEFT JOIN (
+                    SELECT monster_id,
+                           COUNT(CASE WHEN vote = 1  THEN 1 END)::int AS like_count,
+                           COUNT(CASE WHEN vote = -1 THEN 1 END)::int AS dislike_count
+                    FROM monster_vote GROUP BY monster_id
+                ) v ON v.monster_id = m.id
+                LEFT JOIN (
+                    SELECT monster_id, COUNT(*)::int AS report_count
+                    FROM monster_report GROUP BY monster_id
+                ) r ON r.monster_id = m.id
+                LEFT JOIN (
+                    SELECT monster_id, vote FROM monster_vote WHERE username = @Username
+                ) uv ON uv.monster_id = m.id
+                WHERE m.id = @Id
+                  AND m.pending = true
+                  AND COALESCE(r.report_count, 0) < 5;
+            ";
+
+            var row = await conn.QueryFirstOrDefaultAsync<MonsterSuggestionRow>(sql, new { Id = id, Username = username ?? string.Empty });
+            if (row == null) return null;
+
+            return new MonsterSuggestion
+            {
+                Id             = row.Id,
+                Name           = row.Name,
+                Picture        = row.Picture,
+                Humanoid       = row.Humanoid,
+                Pending        = row.Pending,
+                UserAtCreation = row.UserAtCreation,
+                CreatedAt      = row.CreatedAt,
+                UpdatedAt      = row.UpdatedAt,
+                Element        = row.Element,
+                Category       = row.Category,
+                Loots          = row.Loots.Length > 0 ? [.. row.Loots.Split(',')] : [],
+                Locations      = row.Locations.Length > 0 ? [.. row.Locations.Split(',')] : [],
+                LikeCount      = row.LikeCount,
+                DislikeCount   = row.DislikeCount,
+                UserVote       = row.UserVote,
+                LastLikers     = row.LastLikers.Length > 0 ? [.. row.LastLikers.Split(',')] : [],
+                LastDislikers  = row.LastDislikers.Length > 0 ? [.. row.LastDislikers.Split(',')] : [],
+            };
+        }
+
         public async Task<Monster?> GetUserSuggestionEnrichedAsync(int id, string username)
         {
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
