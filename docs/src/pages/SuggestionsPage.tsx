@@ -54,7 +54,7 @@ export default function SuggestionsPage() {
   const { isLoggedIn, waitForLogin, openLoginModal, username } = useAuth();
   useOverlaySync();
 
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const pinnedId = searchParams.get('suggestionId') ? Number(searchParams.get('suggestionId')) : null;
 
   const [suggestions, setSuggestions] = useState<MonsterSuggestion[]>([]);
