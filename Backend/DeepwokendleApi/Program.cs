@@ -169,7 +169,7 @@ public class Program
                     context.Response.StatusCode = 200;
                     context.Response.Headers["Access-Control-Allow-Origin"] = origin;
                     context.Response.Headers["Access-Control-Allow-Credentials"] = "true";
-                    context.Response.Headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS";
+                    context.Response.Headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS,PATCH";
                     context.Response.Headers["Access-Control-Allow-Headers"] = context.Request.Headers["Access-Control-Request-Headers"].FirstOrDefault() ?? "*";
                     await context.Response.CompleteAsync();
                     return;
