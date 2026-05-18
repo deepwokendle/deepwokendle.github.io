@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import type { Monster } from '../types';
 import { apiFetchAllMonsters } from '../services/api';
 
-const CACHE_VERSION = 2;
+const CACHE_VERSION = 3;
 const CACHE_VERSION_KEY = 'monsters_cache_version';
 
 let cachedMonsters: Monster[] | null = null;
