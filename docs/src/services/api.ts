@@ -47,6 +47,7 @@ export const apiRefreshToken = (currentToken: string): Promise<Response> =>
     headers: { Authorization: `Bearer ${currentToken}` },
   });
 
+export const apiFetchMonsterCacheVersion = () => apiFetch('/Monsters/cache-version');
 export const apiFetchAllMonsters = () => apiFetch('/Monsters/getMonsters');
 export const apiFetchDailyMonster = () => apiFetch('/Monsters/daily-monster');
 export const apiFetchInfiniteMonster = () => apiFetch('/Monsters/infinite-monster');

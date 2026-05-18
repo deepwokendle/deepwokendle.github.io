@@ -220,7 +220,8 @@ namespace DeepwokendleApi.Repositories
                     mainhabitat = @MainHabitat,
                     humanoid = @Humanoid,
                     elementid = @ElementId,
-                    categoryid = @CategoryId
+                    categoryid = @CategoryId,
+                    updated_at = NOW()
                 WHERE id = @Id;
             ";
             monsterCommand.Id = id;
@@ -264,7 +265,14 @@ namespace DeepwokendleApi.Repositories
         public async Task PublishMonsterAsync(int id)
         {
             using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            await conn.ExecuteAsync("UPDATE monster SET pending = false WHERE id = @Id;", new { Id = id });
+            await conn.ExecuteAsync("UPDATE monster SET pending = false, updated_at = NOW() WHERE id = @Id;", new { Id = id });
+        }
+
+        public async Task<string?> GetLatestMonsterVersionAsync()
+        {
+            using var conn = new NpgsqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            const string sql = "SELECT MAX(COALESCE(updated_at, created_at))::text FROM monster WHERE pending = false;";
+            return await conn.ExecuteScalarAsync<string?>(sql);
         }
 
         public async Task<(IEnumerable<MonsterSuggestion> Items, int Total)> GetPendingSuggestionsAsync(
