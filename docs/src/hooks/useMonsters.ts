@@ -1,16 +1,23 @@
 import { useState, useCallback, useRef } from 'react';
 import type { Monster } from '../types';
-import { apiFetchAllMonsters } from '../services/api';
+import { apiFetchAllMonsters, apiFetchMonsterCacheVersion } from '../services/api';
 
-const CACHE_VERSION = 2;
 const CACHE_VERSION_KEY = 'monsters_cache_version';
 
 let cachedMonsters: Monster[] | null = null;
 
-if (Number(sessionStorage.getItem(CACHE_VERSION_KEY)) !== CACHE_VERSION) {
-  cachedMonsters = null;
-  sessionStorage.setItem(CACHE_VERSION_KEY, String(CACHE_VERSION));
-}
+(async () => {
+  try {
+    const res = await apiFetchMonsterCacheVersion();
+    if (res.ok) {
+      const version = await res.text();
+      if (version !== sessionStorage.getItem(CACHE_VERSION_KEY)) {
+        cachedMonsters = null;
+        sessionStorage.setItem(CACHE_VERSION_KEY, version);
+      }
+    }
+  } catch { /* ignora falhas de rede */ }
+})();
 
 export function useMonsters() {
   const [monsters, setMonsters] = useState<Monster[] | null>(cachedMonsters);

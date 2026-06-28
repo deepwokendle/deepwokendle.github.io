@@ -92,6 +92,9 @@ public class MonsterService : IMonsterService
     public Task PublishMonsterAsync(int id)
         => _monsterRepository.PublishMonsterAsync(id);
 
+    public Task<string?> GetMonsterCacheVersionAsync()
+        => _monsterRepository.GetLatestMonsterVersionAsync();
+
     public Task<(IEnumerable<MonsterSuggestion> Items, int Total)> GetPendingSuggestionsAsync(int page, int pageSize, string sort, string username, string search = "")
         => _monsterRepository.GetPendingSuggestionsAsync(page, pageSize, sort, username, search);
 

@@ -1,12 +1,18 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import PrivacyModal from './PrivacyModal';
 
 export default function Footer() {
+  const [privacyOpen, setPrivacyOpen] = useState(false);
+
   return (
-    <footer className="footer">
-      <span>&copy; 2026 Deepwokendle</span> |
-      <Link className="underscoreAnimation privacyLink" to="/privacy">
-        Privacy Policy
-      </Link>
-    </footer>
+    <>
+      <PrivacyModal open={privacyOpen} closeable onClose={() => setPrivacyOpen(false)} />
+      <footer className="footer">
+        <span>&copy; 2026 Deepwokendle</span> |
+        <button className="privacyLink privacy-link-btn" onClick={() => setPrivacyOpen(true)}>
+          Privacy Policy
+        </button>
+      </footer>
+    </>
   );
 }

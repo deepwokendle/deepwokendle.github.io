@@ -73,6 +73,13 @@ namespace DeepwokendleApi.Controllers
             return Ok(new { url = imageUrl });
         }
 
+        [HttpGet("cache-version")]
+        public async Task<IActionResult> GetCacheVersion()
+        {
+            var version = await _monsterService.GetMonsterCacheVersionAsync();
+            return Ok(version ?? string.Empty);
+        }
+
         [HttpGet("getMonsters")]
         public async Task<IActionResult> GetAllMonsters()
         {

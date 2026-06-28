@@ -5,6 +5,7 @@ import { useAuth } from './context/AuthContext';
 import { ConfirmDialogProvider } from './components/common/ConfirmDialog';
 import { LayoutProvider } from './context/LayoutContext';
 import AppLayout from './components/layout/AppLayout';
+import ConsentBanner from './components/common/ConsentBanner';
 import GamePage from './pages/GamePage';
 import PrivacyPage from './pages/PrivacyPage';
 import MonsterIndexPage from './pages/MonsterIndexPage';
@@ -22,6 +23,7 @@ export default function App() {
   return (
     <AuthProvider>
       <LayoutProvider>
+        <ConsentBanner />
         <ConfirmDialogProvider />
         <Toaster position="top-right" toastOptions={{ style: { background: 'transparent', boxShadow: 'none', padding: 0 } }} />
         <AppLayout>

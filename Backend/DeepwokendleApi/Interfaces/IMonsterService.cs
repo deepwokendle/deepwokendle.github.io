@@ -23,6 +23,7 @@ namespace DeepwokendleApi.Interfaces
         Task<IEnumerable<Monster>> GetAllMonstersAdminAsync();
         Task<int> AdminCreateMonsterAsync(MonsterCommand dto, string username);
         Task PublishMonsterAsync(int id);
+        Task<string?> GetMonsterCacheVersionAsync();
 
         Task<(IEnumerable<MonsterSuggestion> Items, int Total)> GetPendingSuggestionsAsync(int page, int pageSize, string sort, string username, string search = "");
         Task<IEnumerable<MonsterSuggestion>> GetUserSuggestionsAsync(string username);
